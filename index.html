@@ -3,215 +3,374 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bodega & Ropa - Scanner Cloud</title>
+    <title>Bodega & Ropa</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
-        body { -webkit-tap-highlight-color: transparent; user-select: none; }
-        #scanner-view video { object-fit: cover !important; border-radius: 1rem; width: 100% !important; height: 100% !important; }
+        /* Tipografía y comportamiento estilo iOS */
+        body {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+        }
+
+        /* Efecto Liquid Glass / Frosted Glass */
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(25px) saturate(190%);
+            -webkit-backdrop-filter: blur(25px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+
+        .liquid-glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 0 1px 1px rgba(255, 255, 255, 0.9) inset;
+        }
+
+        .liquid-glass-dock {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        #scanner-view video {
+            object-fit: cover !important;
+            border-radius: 1.5rem;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Ocultar scrollbar visual */
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
+<body class="bg-gradient-to-br from-slate-100 via-rose-50/30 to-sky-50 text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden">
 
-    <!-- Header con Notificador de Estado -->
-    <header class="bg-blue-600 text-white px-5 pt-10 pb-4 shadow-md sticky top-0 z-30">
+    <!-- Orbes de luz líquida de fondo tipo Apple Music -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div class="absolute -top-24 -left-20 w-80 h-80 bg-pink-300/30 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/3 -right-20 w-96 h-96 bg-blue-300/25 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-20 left-1/4 w-80 h-80 bg-amber-200/25 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Indicador de Pull to Refresh (Deslizar hacia abajo) -->
+    <div id="ptr-indicator" class="fixed top-0 left-0 right-0 flex justify-center items-center pointer-events-none z-50 transition-transform duration-200" style="transform: translateY(-60px);">
+        <div class="liquid-glass px-4 py-2 rounded-full shadow-lg flex items-center gap-2 border border-white/60">
+            <i id="ptr-icon" class="fa-solid fa-arrows-rotate text-blue-600 text-xs transition-transform duration-300"></i>
+            <span id="ptr-label" class="text-[11px] font-semibold text-slate-600">Desliza para actualizar</span>
+        </div>
+    </div>
+
+    <!-- Barra de Navegación Superior Liquid Glass -->
+    <header class="sticky top-0 z-40 px-5 pt-12 pb-3.5 liquid-glass border-b border-white/40">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-lg font-black tracking-tight flex items-center gap-2">
-                    <i class="fa-solid fa-store text-amber-300"></i> Mi Bodega & Ropa
+                <span class="text-[10px] font-extrabold uppercase tracking-widest text-blue-600/80">Gestión de Tienda</span>
+                <h1 class="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+                    Bodega & Ropa
                 </h1>
-                <!-- Estado de la sincronización en vivo -->
-                <p id="status-texto" class="text-[11px] text-blue-100 flex items-center gap-1.5 mt-0.5">
-                    <span id="status-dot" class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                    <span id="status-msg">Conectando a Sheets...</span>
-                </p>
             </div>
-            <button onclick="cargarInventarioDesdeSheets(true)" class="text-xs bg-blue-700 active:bg-blue-800 border border-blue-400/40 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-sm">
-                <i id="sync-icon" class="fa-solid fa-arrows-rotate"></i>
-                <span id="badge-total" class="font-bold">0 prod.</span>
-            </button>
+            
+            <div class="flex items-center gap-2">
+                <button onclick="cargarInventarioDesdeSheets(true)" class="active:scale-95 transition-transform bg-white/70 border border-white/80 shadow-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <span id="status-dot" class="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400"></span>
+                    <span id="badge-total" class="text-xs font-bold text-slate-700">0 prod.</span>
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- Contenedor Principal -->
-    <main class="max-w-md mx-auto w-full p-4 flex-1 pb-24">
+    <!-- Contenido Principal -->
+    <main id="scroll-container" class="relative z-10 max-w-md mx-auto w-full p-4 flex-1 pb-32 space-y-4">
 
-        <!-- Banner de Alerta si hay problemas con Google Apps Script -->
-        <div id="banner-error" class="hidden bg-red-50 border border-red-200 text-red-700 p-3.5 rounded-2xl text-xs mb-3 space-y-1">
-            <div class="font-bold flex items-center gap-2">
-                <i class="fa-solid fa-circle-exclamation"></i> Error al conectar con Google Sheets
-            </div>
-            <p id="banner-error-desc" class="text-[11px] text-red-600 leading-relaxed"></p>
-        </div>
-
-        <!-- ================= TAB 1: CONSULTA / VENTA ================= -->
+        <!-- ================= TAB 1: CONSULTAR / VENDER ================= -->
         <section id="tab-verificar" class="space-y-4">
-            <button onclick="abrirCamara('verificar')" class="w-full bg-blue-600 active:bg-blue-700 text-white py-4 px-5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 text-base font-bold transition-all">
-                <i class="fa-solid fa-camera text-xl"></i> Escanear con Cámara
+            
+            <!-- Botón Grande de Escaneo tipo Apple Glass -->
+            <button onclick="abrirCamara('verificar')" class="w-full active:scale-[0.98] transition-all duration-200 liquid-glass-card p-4 rounded-3xl flex items-center justify-between group">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/30">
+                        <i class="fa-solid fa-camera text-lg"></i>
+                    </div>
+                    <div class="text-left">
+                        <h2 class="text-sm font-black text-slate-800">Escanear Código</h2>
+                        <p class="text-[11px] text-slate-500 font-medium">Cámara trasera para barras o QR</p>
+                    </div>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 text-xs">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </div>
             </button>
 
-            <!-- Búsqueda Manual -->
-            <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex gap-2">
-                <div class="relative flex-1">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
-                    <input type="text" id="input-buscar-codigo" placeholder="Escribir código o nombre..." class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
-                </div>
-                <button onclick="buscarPorCodigoManual()" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-semibold">
+            <!-- Barra de búsqueda manual Liquid -->
+            <div class="liquid-glass-card p-2 rounded-2xl flex gap-2 items-center">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs ml-3"></i>
+                <input type="text" id="input-buscar-codigo" placeholder="Escribir código o nombre..." class="w-full py-2 bg-transparent text-sm focus:outline-none font-medium placeholder-slate-400">
+                <button onclick="buscarPorCodigoManual()" class="bg-slate-900 active:scale-95 transition-transform text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm">
                     Buscar
                 </button>
             </div>
 
             <!-- Ficha del Producto Encontrado -->
-            <div id="card-producto" class="hidden bg-white p-5 rounded-2xl shadow-md border border-slate-200 space-y-4">
-                <div class="flex gap-4 items-center border-b border-slate-100 pb-3">
-                    <img id="card-img" src="" class="w-20 h-20 rounded-xl object-cover bg-slate-100 border border-slate-200 hidden" onerror="this.classList.add('hidden')">
+            <div id="card-producto" class="hidden liquid-glass-card p-5 rounded-3xl space-y-4">
+                <div class="flex gap-4 items-center">
+                    <img id="card-img" src="" class="w-20 h-20 rounded-2xl object-cover bg-slate-100/70 border border-white/60 shadow-inner hidden" onerror="this.classList.add('hidden')">
                     <div class="flex-1 min-w-0">
-                        <span id="card-categoria" class="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md inline-block mb-1"></span>
-                        <h2 id="card-nombre" class="text-lg font-black text-slate-800 leading-snug"></h2>
+                        <span id="card-categoria" class="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 bg-blue-100/60 px-2 py-0.5 rounded-md inline-block"></span>
+                        <h3 id="card-nombre" class="text-lg font-black text-slate-900 leading-snug mt-1"></h3>
                         <span id="card-codigo" class="text-[11px] font-mono text-slate-400 block mt-0.5"></span>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 text-center">
-                    <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl">
-                        <span class="text-[10px] uppercase font-bold text-emerald-600 block">Precio Venta</span>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-emerald-500/10 border border-emerald-500/20 p-3.5 rounded-2xl text-center">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-700 block">Precio Venta</span>
                         <span id="card-precio" class="text-2xl font-black text-emerald-700"></span>
                     </div>
-                    <div class="bg-amber-50 border border-amber-100 p-3 rounded-xl">
-                        <span class="text-[10px] uppercase font-bold text-amber-600 block">Stock Actual</span>
+                    <div class="bg-amber-500/10 border border-amber-500/20 p-3.5 rounded-2xl text-center">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-amber-700 block">Stock Actual</span>
                         <span id="card-stock" class="text-2xl font-black text-amber-700"></span>
                     </div>
                 </div>
 
                 <div class="flex gap-2 pt-1">
-                    <button id="btn-vender" onclick="venderUnidad()" class="flex-1 bg-emerald-600 active:bg-emerald-700 text-white py-3 rounded-xl font-bold text-sm shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-cart-arrow-down"></i> Vender (-1)
+                    <button onclick="venderUnidad()" class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 active:scale-95 transition-all text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-cart-shopping"></i> Vender (-1)
                     </button>
-                    <button onclick="cargarEnReposicion(productoSeleccionado)" class="bg-blue-50 active:bg-blue-100 text-blue-600 border border-blue-200 px-4 py-3 rounded-xl font-semibold text-sm">
-                        <i class="fa-solid fa-truck-ramp-box"></i> +Stock
+                    <button onclick="abrirModalEdicion(productoSeleccionado)" class="bg-white/80 active:scale-95 transition-all text-slate-700 border border-white/80 px-4 py-3.5 rounded-2xl font-bold text-sm shadow-sm">
+                        <i class="fa-solid fa-pen-to-square"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Placeholder si no hay escaneo -->
-            <div id="card-vacio" class="text-center py-12 px-6">
-                <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+            <!-- Estado Vacío -->
+            <div id="card-vacio" class="text-center py-16 px-6">
+                <div class="w-16 h-16 liquid-glass rounded-3xl flex items-center justify-center mx-auto mb-3 text-slate-400 text-2xl shadow-sm border border-white">
                     <i class="fa-solid fa-barcode"></i>
                 </div>
-                <h3 class="font-bold text-slate-700 text-sm">Listo para escanear</h3>
-                <p class="text-xs text-slate-400 mt-1 max-w-[240px] mx-auto">Apunta la cámara al código de barras del producto o prenda.</p>
+                <h4 class="font-extrabold text-slate-800 text-sm">Escáner listo</h4>
+                <p class="text-xs text-slate-400 mt-1 max-w-[220px] mx-auto">Enfoca cualquier código de barras o escribe para consultar precio y existencias.</p>
             </div>
         </section>
 
-        <!-- ================= TAB 2: REPOSICIÓN RÁPIDA ================= -->
+        <!-- ================= TAB 2: INVENTARIO ================= -->
+        <section id="tab-inventario" class="space-y-3 hidden">
+            <div class="liquid-glass-card p-2 rounded-2xl flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs ml-3"></i>
+                <input type="text" id="filtro-buscar" onkeyup="renderizarInventario()" placeholder="Filtrar catálogo..." class="w-full py-1.5 bg-transparent text-sm focus:outline-none font-medium placeholder-slate-400">
+            </div>
+
+            <div id="lista-inventario" class="space-y-2.5"></div>
+        </section>
+
+        <!-- ================= TAB 3: REGISTRO RÁPIDO ================= -->
         <section id="tab-registro" class="space-y-4 hidden">
-            <div id="box-reposicion" class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm space-y-4">
-                <div class="border-b border-slate-100 pb-3">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600">Recepción de Mercadería</span>
-                    <h3 id="repo-nombre" class="font-bold text-slate-800 text-base mt-0.5">Selecciona un producto</h3>
-                    <p id="repo-stock-actual" class="text-xs text-slate-500 mt-0.5"></p>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">Sumar paquetes / fardos:</label>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button onclick="sumarLote(1)" class="bg-slate-50 border border-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs active:bg-blue-50 active:border-blue-300">+1 un.</button>
-                        <button onclick="sumarLote(6)" class="bg-slate-50 border border-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs active:bg-blue-50 active:border-blue-300">+6 (pack)</button>
-                        <button onclick="sumarLote(12)" class="bg-slate-50 border border-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs active:bg-blue-50 active:border-blue-300">+12 (doc.)</button>
-                        <button onclick="sumarLote(24)" class="bg-slate-50 border border-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs active:bg-blue-50 active:border-blue-300">+24 (fardo)</button>
-                    </div>
-                </div>
-
-                <div class="flex gap-2 pt-2 border-t border-slate-100">
-                    <input type="number" id="repo-manual" placeholder="Otra cant." class="w-28 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-center font-bold">
-                    <button onclick="sumarLote(parseInt(document.getElementById('repo-manual').value) || 0)" class="flex-1 bg-amber-600 active:bg-amber-700 text-white font-bold py-2.5 rounded-xl text-xs">
-                        Sumar al Inventario
+            <div class="liquid-glass-card p-5 rounded-3xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="font-black text-slate-800 text-base flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-blue-600"></i> Registrar Mercadería
+                    </h3>
+                    <button onclick="abrirCamara('registro')" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-200/60 active:scale-95">
+                        <i class="fa-solid fa-camera mr-1"></i> Escanear
                     </button>
                 </div>
-            </div>
-        </section>
 
-        <!-- ================= TAB 3: INVENTARIO ================= -->
-        <section id="tab-inventario" class="space-y-3 hidden">
-            <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-2">
-                <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm ml-2"></i>
-                <input type="text" id="filtro-buscar" onkeyup="renderizarInventario()" placeholder="Filtrar por nombre o código..." class="w-full py-1 text-sm bg-transparent focus:outline-none">
+                <form onsubmit="guardarNuevoProducto(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1">CÓDIGO DE BARRAS</label>
+                        <input type="text" id="nuevo-codigo" required placeholder="77501..." class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1">NOMBRE DEL PRODUCTO / PRENDA</label>
+                        <input type="text" id="nuevo-nombre" required placeholder="Ej. Gaseosa / Polo Talla M" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 mb-1">PRECIO VENTA (S/)</label>
+                            <input type="number" step="0.10" id="nuevo-precio" required placeholder="0.00" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-bold text-emerald-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 mb-1">STOCK INICIAL</label>
+                            <input type="number" id="nuevo-stock" required placeholder="0" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1">IMAGEN URL (Drive o Web)</label>
+                        <input type="url" id="nuevo-foto" placeholder="https://..." class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 active:scale-98 transition-transform text-white py-3.5 rounded-2xl font-bold text-sm shadow-md mt-2">
+                        Guardar Producto
+                    </button>
+                </form>
             </div>
-
-            <div id="lista-inventario" class="space-y-2"></div>
         </section>
 
     </main>
 
-    <!-- Modal Cámara Escáner -->
-    <div id="modal-scanner" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex flex-col justify-between p-4">
-        <div class="flex justify-between items-center text-white pt-6 px-2">
-            <div>
-                <h3 class="font-black text-base">Apunta al código</h3>
-                <p class="text-xs text-slate-300">Enfoca el código de barras</p>
+    <!-- ================= HOJA MODAL INFERIOR (BOTTOM-SHEET) DE EDICIÓN ================= -->
+    <div id="modal-edicion" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 hidden flex flex-col justify-end transition-opacity duration-300">
+        <div class="liquid-glass-card rounded-t-[32px] p-6 max-w-md mx-auto w-full space-y-4 max-h-[85vh] overflow-y-auto">
+            <div class="w-12 h-1.5 bg-slate-300/80 rounded-full mx-auto -mt-2 mb-2"></div>
+            
+            <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
+                <div>
+                    <span class="text-[10px] font-bold uppercase text-slate-400">Editor de Producto</span>
+                    <h3 id="edit-titulo" class="font-black text-slate-900 text-lg">Editar Información</h3>
+                </div>
+                <button onclick="cerrarModalEdicion()" class="w-8 h-8 rounded-full bg-slate-200/70 flex items-center justify-center text-slate-500 text-sm">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
-            <button onclick="cerrarCamara()" class="w-10 h-10 bg-white/20 active:bg-white/30 rounded-full flex items-center justify-center text-white text-lg">
+
+            <!-- Suma rápida de stock fardos -->
+            <div class="space-y-1.5">
+                <span class="text-[11px] font-bold text-slate-500">REPOSICIÓN RÁPIDA DE STOCK</span>
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="ajustarStockDesdeEdicion(1)" class="bg-white/80 border border-slate-200 py-2 rounded-xl text-xs font-bold active:scale-95">+1</button>
+                    <button onclick="ajustarStockDesdeEdicion(6)" class="bg-white/80 border border-slate-200 py-2 rounded-xl text-xs font-bold active:scale-95">+6</button>
+                    <button onclick="ajustarStockDesdeEdicion(12)" class="bg-white/80 border border-slate-200 py-2 rounded-xl text-xs font-bold active:scale-95">+12</button>
+                    <button onclick="ajustarStockDesdeEdicion(24)" class="bg-white/80 border border-slate-200 py-2 rounded-xl text-xs font-bold active:scale-95">+24</button>
+                </div>
+            </div>
+
+            <form onsubmit="guardarCambiosEdicion(event)" class="space-y-3">
+                <input type="hidden" id="edit-codigo">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1">NOMBRE</label>
+                    <input type="text" id="edit-nombre" required class="w-full p-2.5 bg-white/70 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1">PRECIO VENTA (S/)</label>
+                        <input type="number" step="0.10" id="edit-precio" required class="w-full p-2.5 bg-white/70 border border-slate-200 rounded-xl text-sm font-bold text-emerald-700 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1">STOCK TOTAL</label>
+                        <input type="number" id="edit-stock" required class="w-full p-2.5 bg-white/70 border border-slate-200 rounded-xl text-sm font-bold focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1">IMAGEN URL</label>
+                    <input type="text" id="edit-foto" placeholder="URL de Google Drive o web" class="w-full p-2.5 bg-white/70 border border-slate-200 rounded-xl text-xs focus:outline-none">
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" class="flex-1 bg-blue-600 active:scale-98 text-white py-3 rounded-2xl font-bold text-sm shadow-md">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL CÁMARA ESCÁNER ================= -->
+    <div id="modal-scanner" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex flex-col justify-between p-5">
+        <div class="flex justify-between items-center text-white pt-6">
+            <div>
+                <h3 class="font-black text-lg">Escáner</h3>
+                <p class="text-xs text-slate-300">Apunta al código de barras</p>
+            </div>
+            <button onclick="cerrarCamara()" class="w-10 h-10 bg-white/20 active:scale-90 rounded-full flex items-center justify-center text-white text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
 
-        <div class="w-full max-w-sm mx-auto my-auto relative">
-            <div id="scanner-view" class="w-full aspect-square bg-slate-900 rounded-2xl overflow-hidden border border-white/20"></div>
-            <div class="absolute inset-8 border-2 border-dashed border-amber-400/80 rounded-xl pointer-events-none flex items-center justify-center">
-                <div class="w-full h-0.5 bg-red-500/70 shadow-lg shadow-red-500"></div>
+        <div class="w-full max-w-xs mx-auto my-auto relative">
+            <div id="scanner-view" class="w-full aspect-square bg-slate-900 rounded-3xl overflow-hidden border border-white/20 shadow-2xl"></div>
+            <!-- Mirilla estilo iOS -->
+            <div class="absolute inset-6 border-2 border-dashed border-amber-300/80 rounded-2xl pointer-events-none flex items-center justify-center">
+                <div class="w-full h-0.5 bg-red-500/80 shadow-lg shadow-red-500"></div>
             </div>
         </div>
 
-        <div class="text-center text-white/60 text-xs pb-6">
+        <div class="text-center text-white/60 text-xs pb-4">
             EAN-13, UPC, Code-128 y QR compatibles
         </div>
     </div>
 
-    <!-- Navegación Inferior -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-2 shadow-lg z-30">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <button onclick="cambiarTab('verificar')" id="btn-tab-verificar" class="flex flex-col items-center gap-1 text-blue-600 font-bold text-[11px] py-1">
-                <i class="fa-solid fa-barcode text-lg"></i> Consultar / Venta
+    <!-- Barra Inferior de Navegación Flotante (Dock Liquid Glass) -->
+    <nav class="fixed bottom-4 left-4 right-4 max-w-md mx-auto z-40">
+        <div class="liquid-glass-dock rounded-3xl px-6 py-2.5 flex justify-between items-center">
+            <button onclick="cambiarTab('verificar')" id="btn-tab-verificar" class="flex flex-col items-center gap-1 text-blue-600 font-extrabold text-[10px] active:scale-90 transition-transform">
+                <i class="fa-solid fa-barcode text-lg"></i> Consultar
             </button>
-            <button onclick="cambiarTab('registro')" id="btn-tab-registro" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px] py-1">
-                <i class="fa-solid fa-truck-ramp-box text-lg"></i> Mercadería
-            </button>
-            <button onclick="cambiarTab('inventario')" id="btn-tab-inventario" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px] py-1">
+            <button onclick="cambiarTab('inventario')" id="btn-tab-inventario" class="flex flex-col items-center gap-1 text-slate-400 font-semibold text-[10px] active:scale-90 transition-transform">
                 <i class="fa-solid fa-boxes-stacked text-lg"></i> Inventario
+            </button>
+            <button onclick="cambiarTab('registro')" id="btn-tab-registro" class="flex flex-col items-center gap-1 text-slate-400 font-semibold text-[10px] active:scale-90 transition-transform">
+                <i class="fa-solid fa-circle-plus text-lg"></i> Añadir
             </button>
         </div>
     </nav>
 
-    <!-- Lógica JavaScript Reforzada -->
+    <!-- Script de Lógica, Gestos y Sincronización -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxxYR9UR6hvRh8TVK_cpLKVlGR68fRS95F5LmcffYf4f49DU9xZkcAxZzyx1nab71a7/exec";
 
         let inventario = JSON.parse(localStorage.getItem('bodega_sheets_cache')) || {};
         let html5QrCode = null;
         let productoSeleccionado = null;
+        let destinoEscaneo = 'verificar';
 
-        // Limpiador numérico que soporta "S/ 2,50", "1.50", comas y formatos de moneda
+        // ================= GESTO: PULL TO REFRESH =================
+        let startY = 0;
+        let pullDistance = 0;
+        const ptrIndicator = document.getElementById('ptr-indicator');
+        const ptrIcon = document.getElementById('ptr-icon');
+
+        window.addEventListener('touchstart', (e) => {
+            if (window.scrollY === 0) {
+                startY = e.touches[0].pageY;
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            if (window.scrollY === 0 && startY > 0) {
+                const currentY = e.touches[0].pageY;
+                pullDistance = Math.max(0, (currentY - startY) * 0.45);
+                if (pullDistance > 0 && pullDistance < 100) {
+                    ptrIndicator.style.transform = `translateY(${pullDistance - 60}px)`;
+                    ptrIcon.style.transform = `rotate(${pullDistance * 3}deg)`;
+                }
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchend', async () => {
+            if (pullDistance > 55) {
+                if (navigator.vibrate) navigator.vibrate(40);
+                ptrIndicator.style.transform = 'translateY(15px)';
+                ptrIcon.classList.add('fa-spin');
+                await cargarInventarioDesdeSheets();
+                ptrIcon.classList.remove('fa-spin');
+            }
+            ptrIndicator.style.transform = 'translateY(-60px)';
+            startY = 0;
+            pullDistance = 0;
+        });
+
+        // Limpiador numérico robusto
         function parsearNumero(val) {
             if (typeof val === 'number') return isNaN(val) ? 0 : val;
             if (!val) return 0;
             let str = String(val).replace(/[^0-9.,-]/g, '').trim();
-            if (str.includes(',') && !str.includes('.')) {
-                str = str.replace(',', '.');
-            } else if (str.includes(',') && str.includes('.')) {
-                str = str.replace(',', '');
-            }
+            if (str.includes(',') && !str.includes('.')) str = str.replace(',', '.');
+            else if (str.includes(',') && str.includes('.')) str = str.replace(',', '');
             const num = parseFloat(str);
             return isNaN(num) ? 0 : num;
         }
 
-        // Conversor automático de URLs de Google Drive y web
+        // Conversor automático de URLs de Google Drive a Miniaturas
         function formatearUrlImagen(url) {
             if (!url) return null;
             url = String(url).trim();
             if (!url.startsWith('http')) return null;
-
-            // Si es un enlace de Google Drive, lo convertimos a la miniatura directa
             if (url.includes("drive.google.com")) {
                 const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
                 if (match && match[1]) {
@@ -221,33 +380,37 @@
             return url;
         }
 
-        // Carga y sincronización desde Google Apps Script
-        async function cargarInventarioDesdeSheets(mostrarAlerta = false) {
-            const icon = document.getElementById('sync-icon');
-            const dot = document.getElementById('status-dot');
-            const msg = document.getElementById('status-msg');
-            const banner = document.getElementById('banner-error');
+        function vibrarYSonar() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(1800, ctx.currentTime);
+                gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.08);
+            } catch (e) {}
+            if (navigator.vibrate) navigator.vibrate(60);
+        }
 
-            icon.classList.add('fa-spin');
-            dot.className = "inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse";
-            msg.innerText = "Sincronizando...";
+        // Carga de Google Sheets
+        async function cargarInventarioDesdeSheets(mostrarAlerta = false) {
+            const dot = document.getElementById('status-dot');
+            dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
 
             try {
-                const response = await fetch(API_URL, { method: "GET" });
-                if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-                
+                const response = await fetch(API_URL);
                 const data = await response.json();
-                
-                if (!Array.isArray(data)) {
-                    throw new Error("El script no devolvió una lista válida.");
-                }
 
                 inventario = {};
                 data.forEach(item => {
-                    // Extraer claves sin importar mayúsculas o tildes
                     const keys = Object.keys(item);
-                    const getVal = (nombre) => {
-                        const k = keys.find(x => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(nombre));
+                    const getVal = (nom) => {
+                        const k = keys.find(x => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(nom));
                         return k ? item[k] : '';
                     };
 
@@ -267,61 +430,36 @@
                 });
 
                 localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
-                actualizarInsignia();
-                banner.classList.add('hidden');
-                
-                dot.className = "inline-block w-2 h-2 rounded-full bg-emerald-400";
-                msg.innerText = "Conectado a Sheets";
-
-                if (mostrarAlerta) alert("¡Inventario actualizado con éxito!");
-            } catch (err) {
-                console.error("Error al cargar desde Sheets:", err);
-                dot.className = "inline-block w-2 h-2 rounded-full bg-red-400";
-                msg.innerText = "Error de sincronización";
-                
-                banner.classList.remove('hidden');
-                document.getElementById('banner-error-desc').innerText = 
-                    "No se pudo descargar la hoja. Verifica en Apps Script que la implementación tenga acceso: 'Cualquiera' (Anyone).";
-                
-                actualizarInsignia();
-            } finally {
-                icon.classList.remove('fa-spin');
+                actualizarBadge();
+                dot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400";
+                if (mostrarAlerta) alert("Catálogo actualizado desde Sheets.");
+                renderizarInventario();
+            } catch (e) {
+                dot.className = "w-2 h-2 rounded-full bg-red-400";
+                console.warn("Fallo de red, usando memoria local:", e);
+                actualizarBadge();
             }
         }
 
-        function actualizarInsignia() {
+        function actualizarBadge() {
             document.getElementById('badge-total').innerText = `${Object.keys(inventario).length} prod.`;
         }
 
-        function reproducirBeep() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = "sine";
-                osc.frequency.setValueAtTime(1800, ctx.currentTime);
-                gain.gain.setValueAtTime(0.15, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.1);
-            } catch (e) {}
-            if (navigator.vibrate) navigator.vibrate(60);
-        }
-
+        // Pestañas
         function cambiarTab(tab) {
-            ['verificar', 'registro', 'inventario'].forEach(t => {
+            ['verificar', 'inventario', 'registro'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`btn-tab-${t}`).className = "flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px] py-1";
+                document.getElementById(`btn-tab-${t}`).className = "flex flex-col items-center gap-1 text-slate-400 font-semibold text-[10px] active:scale-90 transition-transform";
             });
             document.getElementById(`tab-${tab}`).classList.remove('hidden');
-            document.getElementById(`btn-tab-${tab}`).className = "flex flex-col items-center gap-1 text-blue-600 font-bold text-[11px] py-1";
+            document.getElementById(`btn-tab-${tab}`).className = "flex flex-col items-center gap-1 text-blue-600 font-extrabold text-[10px] active:scale-90 transition-transform";
 
             if (tab === 'inventario') renderizarInventario();
         }
 
+        // Escáner Cámara
         async function abrirCamara(destino) {
+            destinoEscaneo = destino;
             document.getElementById('modal-scanner').classList.remove('hidden');
 
             const config = {
@@ -359,56 +497,82 @@
             document.getElementById('modal-scanner').classList.add('hidden');
         }
 
+        // Flujo al escanear código
         function onScanSuccess(codigo) {
-            reproducirBeep();
+            vibrarYSonar();
             cerrarCamara();
-            mostrarDetallesProducto(codigo);
+
+            if (destinoEscaneo === 'registro') {
+                document.getElementById('nuevo-codigo').value = codigo;
+                return;
+            }
+
+            // Si está en modo verificar:
+            if (inventario[codigo]) {
+                mostrarDetallesProducto(codigo);
+            } else {
+                // Si NO EXISTE, pregunta si desea darlo de alta
+                if (confirm(`El código "${codigo}" no existe en inventario.\n\n¿Deseas darlo de alta ahora?`)) {
+                    document.getElementById('nuevo-codigo').value = codigo;
+                    cambiarTab('registro');
+                    setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
+                }
+            }
         }
 
         function buscarPorCodigoManual() {
             const val = document.getElementById('input-buscar-codigo').value.trim();
-            if (val) {
-                let match = inventario[val];
-                if (!match) {
-                    match = Object.values(inventario).find(p => p.nombre.toLowerCase().includes(val.toLowerCase()));
+            if (!val) return;
+            let match = inventario[val] || Object.values(inventario).find(p => p.nombre.toLowerCase().includes(val.toLowerCase()));
+
+            if (match) {
+                mostrarDetallesProducto(match.codigo);
+            } else {
+                if (confirm(`No se encontró "${val}". ¿Quieres registrarlo ahora?`)) {
+                    document.getElementById('nuevo-codigo').value = val;
+                    cambiarTab('registro');
                 }
-                if (match) mostrarDetallesProducto(match.codigo);
-                else alert(`No se encontró "${val}" en el inventario.`);
             }
         }
 
         function mostrarDetallesProducto(codigo) {
             productoSeleccionado = codigo;
-            const card = document.getElementById('card-producto');
-            const placeholder = document.getElementById('card-vacio');
+            const item = inventario[codigo];
+            if (!item) return;
 
-            if (inventario[codigo]) {
-                const item = inventario[codigo];
-                document.getElementById('card-codigo').innerText = `CÓDIGO: ${codigo}`;
-                document.getElementById('card-categoria').innerText = item.categoria;
-                document.getElementById('card-nombre').innerText = item.nombre;
-                document.getElementById('card-precio').innerText = `S/ ${item.precio.toFixed(2)}`;
-                document.getElementById('card-stock').innerText = `${item.stock} un.`;
+            document.getElementById('card-codigo').innerText = `CÓDIGO: ${codigo}`;
+            document.getElementById('card-categoria').innerText = item.categoria;
+            document.getElementById('card-nombre').innerText = item.nombre;
+            document.getElementById('card-precio').innerText = `S/ ${item.precio.toFixed(2)}`;
+            document.getElementById('card-stock').innerText = `${item.stock} un.`;
 
-                const imgEl = document.getElementById('card-img');
-                if (item.foto) {
-                    imgEl.src = item.foto;
-                    imgEl.classList.remove('hidden');
-                } else {
-                    imgEl.classList.add('hidden');
-                }
-
-                card.classList.remove('hidden');
-                placeholder.classList.add('hidden');
+            const imgEl = document.getElementById('card-img');
+            if (item.foto) {
+                imgEl.src = item.foto;
+                imgEl.classList.remove('hidden');
             } else {
-                card.classList.add('hidden');
-                placeholder.classList.remove('hidden');
-                alert(`El código "${codigo}" no existe en Google Sheets. Agrégalo en la hoja de cálculo.`);
+                imgEl.classList.add('hidden');
+            }
+
+            document.getElementById('card-producto').classList.remove('hidden');
+            document.getElementById('card-vacio').classList.add('hidden');
+        }
+
+        // Venta (-1) con sincronización en la nube
+        async function venderUnidad() {
+            if (productoSeleccionado && inventario[productoSeleccionado]) {
+                if (inventario[productoSeleccionado].stock > 0) {
+                    inventario[productoSeleccionado].stock -= 1;
+                    localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
+                    mostrarDetallesProducto(productoSeleccionado);
+                    sincronizarConSheets(productoSeleccionado, -1);
+                } else {
+                    alert("¡Sin unidades disponibles!");
+                }
             }
         }
 
-        // Envío seguro a Google Apps Script usando text/plain para evitar errores de CORS
-        async function sincronizarCambioStock(codigo, delta) {
+        async function sincronizarConSheets(codigo, delta) {
             try {
                 await fetch(API_URL, {
                     method: 'POST',
@@ -417,40 +581,91 @@
                     body: JSON.stringify({ accion: "actualizarStock", codigo: codigo, delta: delta })
                 });
             } catch (e) {
-                console.error("Error al sincronizar con Sheets:", e);
+                console.error("Error sincronizando:", e);
             }
         }
 
-        function venderUnidad() {
-            if (productoSeleccionado && inventario[productoSeleccionado]) {
-                if (inventario[productoSeleccionado].stock > 0) {
-                    inventario[productoSeleccionado].stock -= 1;
-                    localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
-                    mostrarDetallesProducto(productoSeleccionado);
-                    sincronizarCambioStock(productoSeleccionado, -1);
-                } else {
-                    alert("¡Sin stock disponible!");
-                }
-            }
-        }
-
-        function cargarEnReposicion(codigo) {
-            if (!inventario[codigo]) return;
-            productoSeleccionado = codigo;
+        // ================= EDICIÓN DESDE INVENTARIO =================
+        function abrirModalEdicion(codigo) {
             const item = inventario[codigo];
-            document.getElementById('repo-nombre').innerText = item.nombre;
-            document.getElementById('repo-stock-actual').innerText = `Stock actual: ${item.stock} unidades | S/ ${item.precio.toFixed(2)}`;
-            cambiarTab('registro');
+            if (!item) return;
+
+            document.getElementById('edit-codigo').value = codigo;
+            document.getElementById('edit-titulo').innerText = item.nombre;
+            document.getElementById('edit-nombre').value = item.nombre;
+            document.getElementById('edit-precio').value = item.precio;
+            document.getElementById('edit-stock').value = item.stock;
+            document.getElementById('edit-foto').value = item.foto || '';
+
+            document.getElementById('modal-edicion').classList.remove('hidden');
         }
 
-        function sumarLote(cantidad) {
-            if (productoSeleccionado && inventario[productoSeleccionado] && cantidad > 0) {
-                inventario[productoSeleccionado].stock += cantidad;
-                localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
-                cargarEnReposicion(productoSeleccionado);
-                sincronizarCambioStock(productoSeleccionado, cantidad);
-                alert(`Se sumaron +${cantidad} unidades a ${inventario[productoSeleccionado].nombre}.`);
+        function cerrarModalEdicion() {
+            document.getElementById('modal-edicion').classList.add('hidden');
+        }
+
+        function ajustarStockDesdeEdicion(delta) {
+            const input = document.getElementById('edit-stock');
+            input.value = parseInt(input.value || 0) + delta;
+        }
+
+        function guardarCambiosEdicion(e) {
+            e.preventDefault();
+            const codigo = document.getElementById('edit-codigo').value;
+            const nuevoNombre = document.getElementById('edit-nombre').value;
+            const nuevoPrecio = parseFloat(document.getElementById('edit-precio').value);
+            const nuevoStock = parseInt(document.getElementById('edit-stock').value);
+            const nuevaFoto = formatearUrlImagen(document.getElementById('edit-foto').value);
+
+            const delta = nuevoStock - inventario[codigo].stock;
+
+            inventario[codigo].nombre = nuevoNombre;
+            inventario[codigo].precio = nuevoPrecio;
+            inventario[codigo].stock = nuevoStock;
+            inventario[codigo].foto = nuevaFoto;
+
+            localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
+            cerrarModalEdicion();
+            renderizarInventario();
+
+            if (productoSeleccionado === codigo) {
+                mostrarDetallesProducto(codigo);
             }
+
+            if (delta !== 0) sincronizarConSheets(codigo, delta);
+            alert("Producto actualizado.");
+        }
+
+        function guardarNuevoProducto(e) {
+            e.preventDefault();
+            const codigo = document.getElementById('nuevo-codigo').value.trim();
+            const nombre = document.getElementById('nuevo-nombre').value.trim();
+            const precio = parseFloat(document.getElementById('nuevo-precio').value);
+            const stock = parseInt(document.getElementById('nuevo-stock').value);
+            const foto = formatearUrlImagen(document.getElementById('nuevo-foto').value);
+
+            inventario[codigo] = {
+                codigo,
+                categoria: "General",
+                nombre,
+                precioCosto: 0,
+                precio,
+                stock,
+                stockMin: 2,
+                foto
+            };
+
+            localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
+            actualizarBadge();
+            document.getElementById('nuevo-codigo').value = '';
+            document.getElementById('nuevo-nombre').value = '';
+            document.getElementById('nuevo-precio').value = '';
+            document.getElementById('nuevo-stock').value = '';
+            document.getElementById('nuevo-foto').value = '';
+
+            mostrarDetallesProducto(codigo);
+            cambiarTab('verificar');
+            alert("Guardado localmente. Recuerda agregarlo a tu Google Sheet para respaldo permanente.");
         }
 
         function renderizarInventario() {
@@ -460,7 +675,7 @@
 
             const keys = Object.keys(inventario);
             if (keys.length === 0) {
-                lista.innerHTML = `<p class="text-center text-xs text-slate-400 py-8">Inventario vacío. Pulsa el botón de actualizar arriba.</p>`;
+                lista.innerHTML = `<p class="text-center text-xs text-slate-400 py-12 font-medium">Inventario vacío. Desliza hacia abajo para sincronizar.</p>`;
                 return;
             }
 
@@ -468,17 +683,23 @@
                 const item = inventario[cod];
                 if (item.nombre.toLowerCase().includes(filtro) || cod.includes(filtro)) {
                     lista.innerHTML += `
-                        <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center gap-3">
-                            ${item.foto ? `<img src="${item.foto}" class="w-12 h-12 rounded-xl object-cover border border-slate-100" onerror="this.remove()">` : ''}
+                        <div class="liquid-glass-card p-3 rounded-2xl flex items-center justify-between gap-3 active:scale-[0.99] transition-transform">
+                            ${item.foto ? `<img src="${item.foto}" class="w-12 h-12 rounded-xl object-cover border border-white/60 shadow-sm" onerror="this.remove()">` : ''}
+                            
                             <div class="flex-1 min-w-0" onclick="mostrarDetallesProducto('${cod}'); cambiarTab('verificar')">
-                                <h4 class="font-bold text-slate-800 text-sm truncate">${item.nombre}</h4>
+                                <h4 class="font-extrabold text-slate-900 text-sm truncate">${item.nombre}</h4>
                                 <div class="flex items-center gap-2 mt-0.5">
                                     <span class="text-[10px] font-mono text-slate-400">${cod}</span>
                                     <span class="text-xs font-black text-emerald-600">S/ ${item.precio.toFixed(2)}</span>
                                 </div>
                             </div>
+
                             <div class="flex items-center gap-2">
-                                <span class="text-xs font-black px-2.5 py-1 rounded-lg ${item.stock <= item.stockMin ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-700'}">${item.stock}</span>
+                                <span class="text-xs font-black px-2.5 py-1 rounded-xl ${item.stock <= item.stockMin ? 'bg-red-500/15 text-red-600' : 'bg-slate-100 text-slate-700'}">${item.stock} un.</span>
+                                
+                                <button onclick="abrirModalEdicion('${cod}')" class="w-8 h-8 rounded-xl bg-white/80 active:scale-90 border border-white flex items-center justify-center text-slate-600 shadow-sm">
+                                    <i class="fa-solid fa-pen text-xs"></i>
+                                </button>
                             </div>
                         </div>
                     `;
@@ -487,6 +708,7 @@
         }
 
         // Carga inicial
+        actualizarBadge();
         cargarInventarioDesdeSheets();
     </script>
 </body>
