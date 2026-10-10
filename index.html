@@ -4,68 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Bodega & Ropa - Scanner</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Html5-Qrcode -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
-        /* Desactivar selección de texto para comportamiento nativo */
-        body {
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        #scanner-view video {
-            object-fit: cover !important;
-            border-radius: 1rem;
-            width: 100% !important;
-            height: 100% !important;
-        }
+        body { -webkit-tap-highlight-color: transparent; user-select: none; }
+        #scanner-view video { object-fit: cover !important; border-radius: 1rem; width: 100% !important; height: 100% !important; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between select-none">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- Header Móvil -->
+    <!-- Header -->
     <header class="bg-blue-600 text-white px-5 pt-12 pb-4 shadow-md sticky top-0 z-30">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div>
                 <h1 class="text-lg font-black tracking-tight flex items-center gap-2">
-                    <i class="fa-solid fa-barcode text-amber-300"></i> Mi Bodega & Ropa
+                    <i class="fa-solid fa-store text-amber-300"></i> Mi Bodega & Ropa
                 </h1>
                 <p class="text-[11px] text-blue-100">Control de Precios e Inventario</p>
             </div>
-            <span id="badge-total" class="text-xs font-bold bg-blue-700/80 border border-blue-400/30 px-3 py-1 rounded-full">
+            <span id="badge-total" class="text-xs font-bold bg-blue-700 border border-blue-400/30 px-3 py-1 rounded-full">
                 0 prod.
             </span>
         </div>
     </header>
 
-    <!-- Contenido Dinámico -->
+    <!-- Contenedor Principal -->
     <main class="max-w-md mx-auto w-full p-4 flex-1 pb-24">
 
-        <!-- ================= VISTA 1: VERIFICADOR ================= -->
+        <!-- ================= TAB 1: VERIFICADOR / VENTA ================= -->
         <section id="tab-verificar" class="space-y-4">
-            <!-- Botón Grande de Escaneo -->
-            <button onclick="abrirCamara('verificar')" class="w-full bg-blue-600 active:bg-blue-700 text-white py-4 px-5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 text-base font-bold transition-all">
+            <button onclick="abrirCamara('verificar')" class="w-full bg-blue-600 active:bg-blue-700 text-white py-4 px-5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 text-base font-bold">
                 <i class="fa-solid fa-camera text-xl"></i> Escanear con Cámara
             </button>
 
-            <!-- Búsqueda Manual -->
-            <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200/80 flex gap-2">
+            <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex gap-2">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
-                    <input type="text" id="input-buscar-codigo" placeholder="Escribir código de barras..." class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                    <input type="text" id="input-buscar-codigo" placeholder="Escribir código o nombre..." class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
                 </div>
                 <button onclick="buscarPorCodigoManual()" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-semibold">
                     Buscar
                 </button>
             </div>
 
-            <!-- Ficha del Producto Encontrado -->
             <div id="card-producto" class="hidden bg-white p-5 rounded-2xl shadow-md border border-slate-200 space-y-4">
-                <div class="border-b border-slate-100 pb-3">
-                    <span id="card-codigo" class="text-[11px] font-mono text-slate-400 tracking-wider"></span>
-                    <h2 id="card-nombre" class="text-xl font-black text-slate-800 leading-tight mt-0.5"></h2>
+                <div class="flex gap-4 items-center border-b border-slate-100 pb-3">
+                    <img id="card-img" src="" class="w-16 h-16 rounded-xl object-cover bg-slate-100 border border-slate-200 hidden">
+                    <div class="flex-1 min-w-0">
+                        <span id="card-codigo" class="text-[11px] font-mono text-slate-400 block tracking-wider"></span>
+                        <h2 id="card-nombre" class="text-lg font-black text-slate-800 leading-snug truncate"></h2>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 text-center">
@@ -74,7 +63,7 @@
                         <span id="card-precio" class="text-2xl font-black text-emerald-700"></span>
                     </div>
                     <div class="bg-amber-50 border border-amber-100 p-3 rounded-xl">
-                        <span class="text-[10px] uppercase font-bold text-amber-600 block">Stock Disponible</span>
+                        <span class="text-[10px] uppercase font-bold text-amber-600 block">Stock</span>
                         <span id="card-stock" class="text-2xl font-black text-amber-700"></span>
                     </div>
                 </div>
@@ -83,28 +72,57 @@
                     <button onclick="venderUnidad()" class="flex-1 bg-emerald-600 active:bg-emerald-700 text-white py-3 rounded-xl font-bold text-sm shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2">
                         <i class="fa-solid fa-cart-arrow-down"></i> Vender (-1)
                     </button>
-                    <button onclick="editarActual()" class="bg-slate-100 active:bg-slate-200 text-slate-700 px-4 py-3 rounded-xl font-semibold text-sm">
-                        <i class="fa-solid fa-pen"></i>
+                    <button onclick="cargarEnReposicion(productoSeleccionado)" class="bg-blue-50 active:bg-blue-100 text-blue-600 border border-blue-200 px-4 py-3 rounded-xl font-semibold text-sm">
+                        <i class="fa-solid fa-truck-ramp-box"></i> +Stock
                     </button>
                 </div>
             </div>
 
-            <!-- Placeholder si no hay escaneo -->
             <div id="card-vacio" class="text-center py-12 px-6">
                 <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
                     <i class="fa-solid fa-barcode"></i>
                 </div>
                 <h3 class="font-bold text-slate-700 text-sm">Listo para escanear</h3>
-                <p class="text-xs text-slate-400 mt-1 max-w-[220px] mx-auto">Apunta con la cámara al código de barras del jugo, producto o prenda.</p>
+                <p class="text-xs text-slate-400 mt-1 max-w-[220px] mx-auto">Escanea el código de barras de cualquier producto o prenda.</p>
             </div>
         </section>
 
-        <!-- ================= VISTA 2: REGISTRO / EDICIÓN ================= -->
-        <section id="tab-registro" class="hidden space-y-4">
+        <!-- ================= TAB 2: INGRESO & REPOSICIÓN ================= -->
+        <section id="tab-registro" class="space-y-4 hidden">
+            <!-- Modal/Caja de reposición rápida si el producto ya existe -->
+            <div id="box-reposicion" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-2xl space-y-3">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700">Mercancía existente</span>
+                        <h3 id="repo-nombre" class="font-bold text-slate-800 text-base"></h3>
+                        <p id="repo-stock-actual" class="text-xs text-slate-500"></p>
+                    </div>
+                    <button onclick="cerrarReposicion()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Sumar paquetes / fardos:</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="sumarLote(1)" class="bg-white border border-amber-300 text-amber-800 font-bold py-2 rounded-xl text-xs active:bg-amber-100">+1 un.</button>
+                        <button onclick="sumarLote(6)" class="bg-white border border-amber-300 text-amber-800 font-bold py-2 rounded-xl text-xs active:bg-amber-100">+6 (pack)</button>
+                        <button onclick="sumarLote(12)" class="bg-white border border-amber-300 text-amber-800 font-bold py-2 rounded-xl text-xs active:bg-amber-100">+12 (doc.)</button>
+                        <button onclick="sumarLote(24)" class="bg-white border border-amber-300 text-amber-800 font-bold py-2 rounded-xl text-xs active:bg-amber-100">+24 (fardo)</button>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-1">
+                    <input type="number" id="repo-manual" placeholder="Otra cant." class="w-24 p-2 bg-white border border-amber-200 rounded-xl text-xs text-center font-bold">
+                    <button onclick="sumarLote(parseInt(document.getElementById('repo-manual').value) || 0)" class="flex-1 bg-amber-600 text-white font-bold py-2 rounded-xl text-xs">
+                        Sumar al Inventario
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formulario de alta / modificación completa -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                    <h2 class="font-black text-slate-800 text-base flex items-center gap-2">
-                        <i class="fa-solid fa-box-open text-blue-600"></i> Registrar / Editar
+                    <h2 class="font-black text-slate-800 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-box-open text-blue-600"></i> Registrar Nuevo Producto
                     </h2>
                     <button onclick="abrirCamara('registro')" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 flex items-center gap-1.5">
                         <i class="fa-solid fa-camera"></i> Escanear Código
@@ -114,25 +132,38 @@
                 <form id="form-guardar" onsubmit="guardarProducto(event)" class="space-y-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 mb-1">CÓDIGO DE BARRAS</label>
-                        <input type="text" id="reg-codigo" required placeholder="Ej: 775012345678" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <input type="text" id="reg-codigo" oninput="comprobarExistencia(this.value)" required placeholder="Escanea o escribe el código" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">NOMBRE DEL PRODUCTO / PRENDA</label>
-                        <input type="text" id="reg-nombre" required placeholder="Ej: Jugo Frugos 1L / Polo Cuello V Negro M" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <label class="block text-xs font-bold text-slate-500 mb-1">NOMBRE Y DETALLE</label>
+                        <input type="text" id="reg-nombre" required placeholder="Ej: Gaseosa Inka Cola 500ml / Polo Oversize L" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">PRECIO DE VENTA</label>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">PRECIO (Soles)</label>
                             <div class="relative">
-                                <span class="absolute left-3 top-2.5 text-slate-400 font-bold text-sm">$</span>
-                                <input type="number" step="0.10" id="reg-precio" required placeholder="0.00" class="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-emerald-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <span class="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">S/</span>
+                                <input type="number" step="0.10" id="reg-precio" required placeholder="0.00" class="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-emerald-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">STOCK (UNIDADES)</label>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">STOCK INICIAL</label>
                             <input type="number" id="reg-stock" required placeholder="0" min="0" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Foto opcional con compresión automática -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">FOTO (Opcional - para ropa o vitrina)</label>
+                        <div class="flex items-center gap-3">
+                            <label class="flex-1 flex items-center justify-center gap-2 border border-dashed border-slate-300 rounded-xl py-2 px-3 bg-slate-50 cursor-pointer active:bg-slate-100">
+                                <i class="fa-solid fa-camera text-slate-400"></i>
+                                <span id="label-foto" class="text-xs text-slate-500 font-medium">Subir foto miniatura</span>
+                                <input type="file" accept="image/*" capture="environment" onchange="procesarFoto(event)" class="hidden">
+                            </label>
+                            <img id="preview-foto" src="" class="w-10 h-10 rounded-lg object-cover border border-slate-200 hidden">
                         </div>
                     </div>
 
@@ -143,54 +174,50 @@
             </div>
         </section>
 
-        <!-- ================= VISTA 3: INVENTARIO ================= -->
-        <section id="tab-inventario" class="hidden space-y-3">
+        <!-- ================= TAB 3: LISTADO INVENTARIO ================= -->
+        <section id="tab-inventario" class="space-y-3 hidden">
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-2">
                 <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm ml-2"></i>
                 <input type="text" id="filtro-buscar" onkeyup="renderizarInventario()" placeholder="Filtrar por nombre o código..." class="w-full py-1 text-sm bg-transparent focus:outline-none">
             </div>
 
-            <div id="lista-inventario" class="space-y-2">
-                <!-- Se inyecta con JavaScript -->
-            </div>
+            <div id="lista-inventario" class="space-y-2"></div>
         </section>
 
     </main>
 
-    <!-- ================= MODAL DEL ESCÁNER CÁMARA ================= -->
+    <!-- Modal Cámara Escáner -->
     <div id="modal-scanner" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex flex-col justify-between p-4">
         <div class="flex justify-between items-center text-white pt-6 px-2">
             <div>
                 <h3 class="font-black text-base">Apunta al código</h3>
-                <p class="text-xs text-slate-300">Asegúrate de que haya buena luz</p>
+                <p class="text-xs text-slate-300">Enfoca el código de barras de la etiqueta</p>
             </div>
             <button onclick="cerrarCamara()" class="w-10 h-10 bg-white/20 active:bg-white/30 rounded-full flex items-center justify-center text-white text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
 
-        <!-- Visor del escáner -->
         <div class="w-full max-w-sm mx-auto my-auto relative">
             <div id="scanner-view" class="w-full aspect-square bg-slate-900 rounded-2xl overflow-hidden border border-white/20"></div>
-            <!-- Guía visual del lector -->
             <div class="absolute inset-8 border-2 border-dashed border-amber-400/80 rounded-xl pointer-events-none flex items-center justify-center">
                 <div class="w-full h-0.5 bg-red-500/70 shadow-lg shadow-red-500"></div>
             </div>
         </div>
 
         <div class="text-center text-white/60 text-xs pb-6">
-            Detecta automáticamente códigos de barras de cajas, botellas y ropa
+            EAN-13, UPC, Code-128 y QR compatibles
         </div>
     </div>
 
-    <!-- Barra Inferior de Navegación -->
+    <!-- Navegación Inferior -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-2 shadow-lg z-30">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <button onclick="cambiarTab('verificar')" id="btn-tab-verificar" class="flex flex-col items-center gap-1 text-blue-600 font-bold text-[11px] py-1">
-                <i class="fa-solid fa-barcode text-lg"></i> Verificar
+                <i class="fa-solid fa-barcode text-lg"></i> Verificar / Venta
             </button>
             <button onclick="cambiarTab('registro')" id="btn-tab-registro" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px] py-1">
-                <i class="fa-solid fa-circle-plus text-lg"></i> Registrar
+                <i class="fa-solid fa-truck-ramp-box text-lg"></i> Mercancía
             </button>
             <button onclick="cambiarTab('inventario')" id="btn-tab-inventario" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px] py-1">
                 <i class="fa-solid fa-boxes-stacked text-lg"></i> Inventario
@@ -198,14 +225,14 @@
         </div>
     </nav>
 
-    <!-- Sonido y Lógica JavaScript -->
+    <!-- Script de Gestión e Imágenes -->
     <script>
         let inventario = JSON.parse(localStorage.getItem('bodega_inventario')) || {};
         let html5QrCode = null;
         let destinoEscaneo = 'verificar';
         let productoSeleccionado = null;
+        let fotoBase64Temporal = null;
 
-        // Sonido de Beep al escanear (Sintetizador Web Audio API)
         function reproducirBeep() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -213,15 +240,14 @@
                 const gain = ctx.createGain();
                 osc.type = "sine";
                 osc.frequency.setValueAtTime(1800, ctx.currentTime);
-                gain.gain.setValueAtTime(0.2, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
                 osc.connect(gain);
                 gain.connect(ctx.destination);
                 osc.start();
-                osc.stop(ctx.currentTime + 0.12);
+                osc.stop(ctx.currentTime + 0.1);
             } catch (e) {}
-
-            if (navigator.vibrate) navigator.vibrate(80);
+            if (navigator.vibrate) navigator.vibrate(60);
         }
 
         function guardarDatos() {
@@ -230,25 +256,21 @@
         }
 
         function actualizarInsignia() {
-            const count = Object.keys(inventario).length;
-            document.getElementById('badge-total').innerText = `${count} prod.`;
+            document.getElementById('badge-total').innerText = `${Object.keys(inventario).length} prod.`;
         }
 
-        // Navegación de pestañas
         function cambiarTab(tab) {
             ['verificar', 'registro', 'inventario'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
-                const btn = document.getElementById(`btn-tab-${t}`);
-                btn.className = "flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px] py-1";
+                document.getElementById(`btn-tab-${t}`).className = "flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px] py-1";
             });
-
             document.getElementById(`tab-${tab}`).classList.remove('hidden');
             document.getElementById(`btn-tab-${tab}`).className = "flex flex-col items-center gap-1 text-blue-600 font-bold text-[11px] py-1";
 
             if (tab === 'inventario') renderizarInventario();
         }
 
-        // ====== CONTROL DE CÁMARA ROBUSTO (EAN-13, UPC, CODE-128) ======
+        // Cámara
         async function abrirCamara(destino) {
             destinoEscaneo = destino;
             document.getElementById('modal-scanner').classList.remove('hidden');
@@ -263,7 +285,6 @@
                     Html5QrcodeSupportedFormats.UPC_A,
                     Html5QrcodeSupportedFormats.UPC_E,
                     Html5QrcodeSupportedFormats.CODE_128,
-                    Html5QrcodeSupportedFormats.CODE_39,
                     Html5QrcodeSupportedFormats.QR_CODE
                 ]
             };
@@ -273,26 +294,11 @@
                     await html5QrCode.stop().catch(() => {});
                     html5QrCode = null;
                 }
-
                 html5QrCode = new Html5Qrcode("scanner-view");
-
-                await html5QrCode.start(
-                    { facingMode: { exact: "environment" } },
-                    config,
-                    onScanSuccess,
-                    () => {}
-                );
+                await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
             } catch (err) {
-                // Si falla exact: environment, intentar modo estándar (funciona en Safari iOS y Chrome)
-                html5QrCode.start(
-                    { facingMode: "environment" },
-                    config,
-                    onScanSuccess,
-                    () => {}
-                ).catch(e => {
-                    alert("No se pudo iniciar la cámara. Asegúrate de dar permisos de cámara en el navegador.");
-                    cerrarCamara();
-                });
+                alert("No se pudo iniciar la cámara. Verifica los permisos del navegador.");
+                cerrarCamara();
             }
         }
 
@@ -312,17 +318,94 @@
                 mostrarDetallesProducto(codigo);
             } else {
                 document.getElementById('reg-codigo').value = codigo;
-                if (inventario[codigo]) {
-                    document.getElementById('reg-nombre').value = inventario[codigo].nombre;
-                    document.getElementById('reg-precio').value = inventario[codigo].precio;
-                    document.getElementById('reg-stock').value = inventario[codigo].stock;
-                }
+                comprobarExistencia(codigo);
             }
         }
 
+        // Detección al escribir o escanear
+        function comprobarExistencia(codigo) {
+            if (inventario[codigo]) {
+                cargarEnReposicion(codigo);
+            } else {
+                cerrarReposicion();
+            }
+        }
+
+        function cargarEnReposicion(codigo) {
+            if (!inventario[codigo]) return;
+            productoSeleccionado = codigo;
+            const item = inventario[codigo];
+            document.getElementById('repo-nombre').innerText = item.nombre;
+            document.getElementById('repo-stock-actual').innerText = `Stock actual: ${item.stock} unidades | Precio: S/ ${item.precio.toFixed(2)}`;
+            document.getElementById('box-reposicion').classList.remove('hidden');
+
+            // Autocompletar formulario abajo por si se requiere editar precio
+            document.getElementById('reg-codigo').value = codigo;
+            document.getElementById('reg-nombre').value = item.nombre;
+            document.getElementById('reg-precio').value = item.precio;
+            document.getElementById('reg-stock').value = item.stock;
+            if (item.foto) {
+                document.getElementById('preview-foto').src = item.foto;
+                document.getElementById('preview-foto').classList.remove('hidden');
+            }
+            cambiarTab('registro');
+        }
+
+        function sumarLote(cantidad) {
+            if (productoSeleccionado && inventario[productoSeleccionado] && cantidad > 0) {
+                inventario[productoSeleccionado].stock += cantidad;
+                guardarDatos();
+                cargarEnReposicion(productoSeleccionado);
+                alert(`Se sumaron +${cantidad} unidades. Nuevo stock: ${inventario[productoSeleccionado].stock}`);
+            }
+        }
+
+        function cerrarReposicion() {
+            document.getElementById('box-reposicion').classList.add('hidden');
+        }
+
+        // Compresor de imagen a miniatura de ~12KB
+        function procesarFoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Tamaño estándar de miniatura para no sobrecargar almacenamiento
+                    const maxDim = 150;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        height = (height * maxDim) / width;
+                        width = maxDim;
+                    } else {
+                        width = (width * maxDim) / height;
+                        height = maxDim;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    fotoBase64Temporal = canvas.toDataURL('image/jpeg', 0.6);
+                    document.getElementById('preview-foto').src = fotoBase64Temporal;
+                    document.getElementById('preview-foto').classList.remove('hidden');
+                    document.getElementById('label-foto').innerText = "Foto lista";
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
         function buscarPorCodigoManual() {
-            const cod = document.getElementById('input-buscar-codigo').value.trim();
-            if (cod) mostrarDetallesProducto(cod);
+            const val = document.getElementById('input-buscar-codigo').value.trim();
+            if (val) mostrarDetallesProducto(val);
         }
 
         function mostrarDetallesProducto(codigo) {
@@ -334,16 +417,25 @@
                 const item = inventario[codigo];
                 document.getElementById('card-codigo').innerText = `CÓDIGO: ${codigo}`;
                 document.getElementById('card-nombre').innerText = item.nombre;
-                document.getElementById('card-precio').innerText = `$${item.precio.toFixed(2)}`;
+                document.getElementById('card-precio').innerText = `S/ ${item.precio.toFixed(2)}`;
                 document.getElementById('card-stock').innerText = item.stock;
+
+                const imgEl = document.getElementById('card-img');
+                if (item.foto) {
+                    imgEl.src = item.foto;
+                    imgEl.classList.remove('hidden');
+                } else {
+                    imgEl.classList.add('hidden');
+                }
 
                 card.classList.remove('hidden');
                 placeholder.classList.add('hidden');
             } else {
                 card.classList.add('hidden');
                 placeholder.classList.remove('hidden');
-                if (confirm(`El código "${codigo}" no existe. ¿Quieres registrarlo ahora?`)) {
+                if (confirm(`El código "${codigo}" no existe. ¿Registrarlo ahora?`)) {
                     document.getElementById('reg-codigo').value = codigo;
+                    cerrarReposicion();
                     cambiarTab('registro');
                 }
             }
@@ -356,19 +448,8 @@
                     guardarDatos();
                     mostrarDetallesProducto(productoSeleccionado);
                 } else {
-                    alert("Sin stock disponible.");
+                    alert("¡Sin stock disponible!");
                 }
-            }
-        }
-
-        function editarActual() {
-            if (productoSeleccionado && inventario[productoSeleccionado]) {
-                const item = inventario[productoSeleccionado];
-                document.getElementById('reg-codigo').value = productoSeleccionado;
-                document.getElementById('reg-nombre').value = item.nombre;
-                document.getElementById('reg-precio').value = item.precio;
-                document.getElementById('reg-stock').value = item.stock;
-                cambiarTab('registro');
             }
         }
 
@@ -379,10 +460,20 @@
             const precio = parseFloat(document.getElementById('reg-precio').value);
             const stock = parseInt(document.getElementById('reg-stock').value);
 
-            inventario[codigo] = { nombre, precio, stock };
-            guardarDatos();
+            const fotoExistente = inventario[codigo] ? inventario[codigo].foto : null;
 
+            inventario[codigo] = {
+                nombre,
+                precio,
+                stock,
+                foto: fotoBase64Temporal || fotoExistente || null
+            };
+
+            guardarDatos();
             document.getElementById('form-guardar').reset();
+            document.getElementById('preview-foto').classList.add('hidden');
+            fotoBase64Temporal = null;
+            cerrarReposicion();
             mostrarDetallesProducto(codigo);
             cambiarTab('verificar');
         }
@@ -394,7 +485,7 @@
 
             const keys = Object.keys(inventario);
             if (keys.length === 0) {
-                lista.innerHTML = `<p class="text-center text-xs text-slate-400 py-8">No hay productos en inventario.</p>`;
+                lista.innerHTML = `<p class="text-center text-xs text-slate-400 py-8">Inventario vacío.</p>`;
                 return;
             }
 
@@ -403,11 +494,12 @@
                 if (item.nombre.toLowerCase().includes(filtro) || cod.includes(filtro)) {
                     lista.innerHTML += `
                         <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center gap-2">
+                            ${item.foto ? `<img src="${item.foto}" class="w-10 h-10 rounded-lg object-cover border border-slate-100">` : ''}
                             <div class="flex-1 min-w-0">
                                 <h4 class="font-bold text-slate-800 text-sm truncate">${item.nombre}</h4>
                                 <div class="flex items-center gap-2 mt-0.5">
                                     <span class="text-[10px] font-mono text-slate-400">${cod}</span>
-                                    <span class="text-xs font-black text-emerald-600">$${item.precio.toFixed(2)}</span>
+                                    <span class="text-xs font-black text-emerald-600">S/ ${item.precio.toFixed(2)}</span>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
