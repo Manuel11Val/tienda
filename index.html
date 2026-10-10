@@ -14,30 +14,40 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- Header -->
-    <header class="bg-blue-600 text-white px-5 pt-12 pb-4 shadow-md sticky top-0 z-30">
+    <!-- Header con Notificador de Estado -->
+    <header class="bg-blue-600 text-white px-5 pt-10 pb-4 shadow-md sticky top-0 z-30">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div>
                 <h1 class="text-lg font-black tracking-tight flex items-center gap-2">
                     <i class="fa-solid fa-store text-amber-300"></i> Mi Bodega & Ropa
                 </h1>
-                <p id="status-sync" class="text-[11px] text-blue-100 flex items-center gap-1.5">
-                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span> Conectado a Sheets
+                <!-- Estado de la sincronización en vivo -->
+                <p id="status-texto" class="text-[11px] text-blue-100 flex items-center gap-1.5 mt-0.5">
+                    <span id="status-dot" class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span id="status-msg">Conectando a Sheets...</span>
                 </p>
             </div>
-            <button onclick="cargarInventarioDesdeSheets(true)" class="text-xs bg-blue-700 active:bg-blue-800 border border-blue-400/30 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+            <button onclick="cargarInventarioDesdeSheets(true)" class="text-xs bg-blue-700 active:bg-blue-800 border border-blue-400/40 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-sm">
                 <i id="sync-icon" class="fa-solid fa-arrows-rotate"></i>
-                <span id="badge-total">0 prod.</span>
+                <span id="badge-total" class="font-bold">0 prod.</span>
             </button>
         </div>
     </header>
 
-    <!-- Contenido Principal -->
+    <!-- Contenedor Principal -->
     <main class="max-w-md mx-auto w-full p-4 flex-1 pb-24">
 
-        <!-- ================= TAB 1: VERIFICADOR / VENTA ================= -->
+        <!-- Banner de Alerta si hay problemas con Google Apps Script -->
+        <div id="banner-error" class="hidden bg-red-50 border border-red-200 text-red-700 p-3.5 rounded-2xl text-xs mb-3 space-y-1">
+            <div class="font-bold flex items-center gap-2">
+                <i class="fa-solid fa-circle-exclamation"></i> Error al conectar con Google Sheets
+            </div>
+            <p id="banner-error-desc" class="text-[11px] text-red-600 leading-relaxed"></p>
+        </div>
+
+        <!-- ================= TAB 1: CONSULTA / VENTA ================= -->
         <section id="tab-verificar" class="space-y-4">
-            <button onclick="abrirCamara('verificar')" class="w-full bg-blue-600 active:bg-blue-700 text-white py-4 px-5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 text-base font-bold">
+            <button onclick="abrirCamara('verificar')" class="w-full bg-blue-600 active:bg-blue-700 text-white py-4 px-5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 text-base font-bold transition-all">
                 <i class="fa-solid fa-camera text-xl"></i> Escanear con Cámara
             </button>
 
@@ -69,7 +79,7 @@
                         <span id="card-precio" class="text-2xl font-black text-emerald-700"></span>
                     </div>
                     <div class="bg-amber-50 border border-amber-100 p-3 rounded-xl">
-                        <span class="text-[10px] uppercase font-bold text-amber-600 block">Stock en Tienda</span>
+                        <span class="text-[10px] uppercase font-bold text-amber-600 block">Stock Actual</span>
                         <span id="card-stock" class="text-2xl font-black text-amber-700"></span>
                     </div>
                 </div>
@@ -84,12 +94,13 @@
                 </div>
             </div>
 
+            <!-- Placeholder si no hay escaneo -->
             <div id="card-vacio" class="text-center py-12 px-6">
                 <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
                     <i class="fa-solid fa-barcode"></i>
                 </div>
                 <h3 class="font-bold text-slate-700 text-sm">Listo para escanear</h3>
-                <p class="text-xs text-slate-400 mt-1 max-w-[240px] mx-auto">Apunta la cámara a cualquier producto de bodega o prenda de vestir.</p>
+                <p class="text-xs text-slate-400 mt-1 max-w-[240px] mx-auto">Apunta la cámara al código de barras del producto o prenda.</p>
             </div>
         </section>
 
@@ -121,7 +132,7 @@
             </div>
         </section>
 
-        <!-- ================= TAB 3: INVENTARIO COMPLETO ================= -->
+        <!-- ================= TAB 3: INVENTARIO ================= -->
         <section id="tab-inventario" class="space-y-3 hidden">
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-2">
                 <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm ml-2"></i>
@@ -161,7 +172,7 @@
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-2 shadow-lg z-30">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <button onclick="cambiarTab('verificar')" id="btn-tab-verificar" class="flex flex-col items-center gap-1 text-blue-600 font-bold text-[11px] py-1">
-                <i class="fa-solid fa-barcode text-lg"></i> Consultar / Vender
+                <i class="fa-solid fa-barcode text-lg"></i> Consultar / Venta
             </button>
             <button onclick="cambiarTab('registro')" id="btn-tab-registro" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[11px] py-1">
                 <i class="fa-solid fa-truck-ramp-box text-lg"></i> Mercadería
@@ -172,56 +183,106 @@
         </div>
     </nav>
 
-    <!-- Lógica de Conexión y Cámara -->
+    <!-- Lógica JavaScript Reforzada -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxxYR9UR6hvRh8TVK_cpLKVlGR68fRS95F5LmcffYf4f49DU9xZkcAxZzyx1nab71a7/exec";
 
         let inventario = JSON.parse(localStorage.getItem('bodega_sheets_cache')) || {};
         let html5QrCode = null;
-        let destinoEscaneo = 'verificar';
         let productoSeleccionado = null;
 
+        // Limpiador numérico que soporta "S/ 2,50", "1.50", comas y formatos de moneda
+        function parsearNumero(val) {
+            if (typeof val === 'number') return isNaN(val) ? 0 : val;
+            if (!val) return 0;
+            let str = String(val).replace(/[^0-9.,-]/g, '').trim();
+            if (str.includes(',') && !str.includes('.')) {
+                str = str.replace(',', '.');
+            } else if (str.includes(',') && str.includes('.')) {
+                str = str.replace(',', '');
+            }
+            const num = parseFloat(str);
+            return isNaN(num) ? 0 : num;
+        }
+
+        // Conversor automático de URLs de Google Drive y web
         function formatearUrlImagen(url) {
             if (!url) return null;
+            url = String(url).trim();
+            if (!url.startsWith('http')) return null;
+
+            // Si es un enlace de Google Drive, lo convertimos a la miniatura directa
             if (url.includes("drive.google.com")) {
                 const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
                 if (match && match[1]) {
-                    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400`;
+                    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w500`;
                 }
             }
             return url;
         }
 
+        // Carga y sincronización desde Google Apps Script
         async function cargarInventarioDesdeSheets(mostrarAlerta = false) {
             const icon = document.getElementById('sync-icon');
+            const dot = document.getElementById('status-dot');
+            const msg = document.getElementById('status-msg');
+            const banner = document.getElementById('banner-error');
+
             icon.classList.add('fa-spin');
+            dot.className = "inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+            msg.innerText = "Sincronizando...";
 
             try {
-                const response = await fetch(API_URL);
+                const response = await fetch(API_URL, { method: "GET" });
+                if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+                
                 const data = await response.json();
                 
+                if (!Array.isArray(data)) {
+                    throw new Error("El script no devolvió una lista válida.");
+                }
+
                 inventario = {};
                 data.forEach(item => {
-                    const cod = String(item['Código'] || item['Codigo'] || '').trim();
+                    // Extraer claves sin importar mayúsculas o tildes
+                    const keys = Object.keys(item);
+                    const getVal = (nombre) => {
+                        const k = keys.find(x => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(nombre));
+                        return k ? item[k] : '';
+                    };
+
+                    const cod = String(getVal('codig') || '').trim();
                     if (cod) {
                         inventario[cod] = {
                             codigo: cod,
-                            categoria: item['Categoría'] || item['Categoria'] || 'General',
-                            nombre: item['Producto'] || item['Nombre'] || 'Sin nombre',
-                            precioCosto: parseFloat(item['Precio Costo (S/)'] || item['Precio Costo'] || 0),
-                            precio: parseFloat(item['Precio Venta (S/)'] || item['Precio Venta'] || 0),
-                            stock: parseInt(item['Stock Actual'] || item['Stock'] || 0),
-                            stockMin: parseInt(item['Stock Mínimo'] || item['Stock Minimo'] || 0),
-                            foto: formatearUrlImagen(item['Imagen URL'] || item['Imagen'] || '')
+                            categoria: getVal('categor') || 'General',
+                            nombre: getVal('product') || getVal('nombr') || 'Sin nombre',
+                            precioCosto: parsearNumero(getVal('costo')),
+                            precio: parsearNumero(getVal('venta')),
+                            stock: parseInt(parsearNumero(getVal('stock actual') || getVal('stock'))),
+                            stockMin: parseInt(parsearNumero(getVal('minimo'))),
+                            foto: formatearUrlImagen(getVal('imagen') || getVal('foto') || getVal('url'))
                         };
                     }
                 });
 
                 localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
                 actualizarInsignia();
-                if (mostrarAlerta) alert("¡Inventario actualizado desde Google Sheets!");
+                banner.classList.add('hidden');
+                
+                dot.className = "inline-block w-2 h-2 rounded-full bg-emerald-400";
+                msg.innerText = "Conectado a Sheets";
+
+                if (mostrarAlerta) alert("¡Inventario actualizado con éxito!");
             } catch (err) {
-                console.warn("Usando datos locales:", err);
+                console.error("Error al cargar desde Sheets:", err);
+                dot.className = "inline-block w-2 h-2 rounded-full bg-red-400";
+                msg.innerText = "Error de sincronización";
+                
+                banner.classList.remove('hidden');
+                document.getElementById('banner-error-desc').innerText = 
+                    "No se pudo descargar la hoja. Verifica en Apps Script que la implementación tenga acceso: 'Cualquiera' (Anyone).";
+                
                 actualizarInsignia();
             } finally {
                 icon.classList.remove('fa-spin');
@@ -261,7 +322,6 @@
         }
 
         async function abrirCamara(destino) {
-            destinoEscaneo = destino;
             document.getElementById('modal-scanner').classList.remove('hidden');
 
             const config = {
@@ -328,7 +388,7 @@
                 document.getElementById('card-categoria').innerText = item.categoria;
                 document.getElementById('card-nombre').innerText = item.nombre;
                 document.getElementById('card-precio').innerText = `S/ ${item.precio.toFixed(2)}`;
-                document.getElementById('card-stock').innerText = item.stock;
+                document.getElementById('card-stock').innerText = `${item.stock} un.`;
 
                 const imgEl = document.getElementById('card-img');
                 if (item.foto) {
@@ -343,16 +403,17 @@
             } else {
                 card.classList.add('hidden');
                 placeholder.classList.remove('hidden');
-                alert(`El código "${codigo}" no existe en Google Sheets. Agrégalo primero en la hoja de cálculo.`);
+                alert(`El código "${codigo}" no existe en Google Sheets. Agrégalo en la hoja de cálculo.`);
             }
         }
 
+        // Envío seguro a Google Apps Script usando text/plain para evitar errores de CORS
         async function sincronizarCambioStock(codigo, delta) {
             try {
                 await fetch(API_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ accion: "actualizarStock", codigo: codigo, delta: delta })
                 });
             } catch (e) {
@@ -408,7 +469,7 @@
                 if (item.nombre.toLowerCase().includes(filtro) || cod.includes(filtro)) {
                     lista.innerHTML += `
                         <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center gap-3">
-                            ${item.foto ? `<img src="${item.foto}" class="w-11 h-11 rounded-xl object-cover border border-slate-100" onerror="this.remove()">` : ''}
+                            ${item.foto ? `<img src="${item.foto}" class="w-12 h-12 rounded-xl object-cover border border-slate-100" onerror="this.remove()">` : ''}
                             <div class="flex-1 min-w-0" onclick="mostrarDetallesProducto('${cod}'); cambiarTab('verificar')">
                                 <h4 class="font-bold text-slate-800 text-sm truncate">${item.nombre}</h4>
                                 <div class="flex items-center gap-2 mt-0.5">
@@ -425,6 +486,7 @@
             });
         }
 
+        // Carga inicial
         cargarInventarioDesdeSheets();
     </script>
 </body>
