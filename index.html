@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Bodega y Ropa</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Librería para escanear códigos de barras con la cámara -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans pb-20">
+
+    <!-- Header -->
+    <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <h1 class="text-lg font-bold"><i class="fa-solid fa-store mr-2"></i>Mi Bodega & Ropa</h1>
+            <span id="total-items" class="text-xs bg-blue-700 px-2.5 py-1 rounded-full">0 prod.</span>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <main class="max-w-md mx-auto p-4 space-y-4">
+
+        <!-- SECCIÓN 1: VERIFICAR PRECIO -->
+        <section id="seccion-verificar" class="space-y-4">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-3">
+                <h2 class="text-md font-semibold text-gray-700"><i class="fa-solid fa-barcode text-blue-500 mr-2"></i>Verificar Precio</h2>
+                
+                <button onclick="iniciarEscaner('verificar')" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-camera"></i> Usar Cámara para Escanear
+                </button>
+
+                <div id="reader-verificar" class="w-full overflow-hidden rounded-lg"></div>
+
+                <div class="flex gap-2">
+                    <input type="text" id="input-verificar" placeholder="O escribe el código aquí..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button onclick="verificarProducto()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Buscar</button>
+                </div>
+            </div>
+
+            <!-- Resultado de Verificación -->
+            <div id="resultado-verificacion" class="hidden bg-white p-5 rounded-xl shadow-sm border border-gray-100 text-center space-y-2">
+                <h3 id="res-nombre" class="text-xl font-bold text-gray-800"></h3>
+                <p id="res-precio" class="text-3xl font-extrabold text-green-600"></p>
+                <p id="res-stock" class="text-sm text-gray-500"></p>
+                <button onclick="venderUnidad()" class="mt-2 w-full bg-emerald-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-emerald-700"><i class="fa-solid fa-cart-shopping mr-2"></i>Vender 1 Unidad (-1 Stock)</button>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: GESTIONAR / REGISTRAR -->
+        <section id="seccion-gestionar" class="hidden space-y-4">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-3">
+                <h2 class="text-md font-semibold text-gray-700"><i class="fa-solid fa-pen-to-square text-blue-500 mr-2"></i>Registrar / Actualizar Producto</h2>
+                
+                <button onclick="iniciarEscaner('registrar')" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-camera"></i> Escanear Código de Barras
+                </button>
+
+                <div id="reader-registrar" class="w-full overflow-hidden rounded-lg"></div>
+
+                <form id="form-producto" onsubmit="guardarProducto(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Código de barras</label>
+                        <input type="text" id="reg-codigo" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Nombre (Ej: Jugo 1L / Polo M)</label>
+                        <input type="text" id="reg-nombre" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Precio ($)</label>
+                            <input type="number" step="0.01" id="reg-precio" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Stock Inicial</label>
+                            <input type="number" id="reg-stock" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700">Guardar Producto</button>
+                </form
