@@ -765,18 +765,95 @@
             return isNaN(num) ? 0 : num;
         }
 
+        // Normaliza enlaces de imágenes sin cambiar el flujo de guardado de Apps Script.
+        function extraerIdDrive(url) {
+            const texto = String(url || '').trim();
+            const match = texto.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=|thumbnail\?id=)([a-zA-Z0-9_-]+)/i)
+                || texto.match(/[?&]id=([a-zA-Z0-9_-]+)/i)
+                || texto.match(/\/d\/([a-zA-Z0-9_-]+)/i);
+            return match && match[1] ? match[1] : null;
+        }
+
         function formatearUrlImagen(url) {
-            if (!url) return null;
+            if (url === null || url === undefined) return null;
             url = String(url).trim();
-            if (url.startsWith('data:image')) return url;
-            if (!url.startsWith('http')) return null;
-            if (url.includes("drive.google.com")) {
-                const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-                if (match && match[1]) {
-                    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w600`;
-                }
-            }
+            if (!url || /^(null|undefined|false|n\/a)$/i.test(url)) return null;
+            if (url.startsWith('data:image/')) return url;
+            if (!/^https?:\/\//i.test(url)) return null;
+            const idDrive = extraerIdDrive(url);
+            if (idDrive) return `https://drive.google.com/thumbnail?id=${idDrive}&sz=w800`;
             return url;
+        }
+
+        function candidatosImagen(url) {
+            const principal = formatearUrlImagen(url);
+            if (!principal) return [];
+            const idDrive = extraerIdDrive(url) || extraerIdDrive(principal);
+            const candidatos = [principal];
+            if (idDrive) {
+                candidatos.push(`https://drive.google.com/uc?export=view&id=${idDrive}`);
+                candidatos.push(`https://lh3.googleusercontent.com/d/${idDrive}`);
+                candidatos.push(`https://drive.google.com/thumbnail?id=${idDrive}&sz=w1200`);
+            }
+            return [...new Set(candidatos)];
+        }
+
+        function prepararImagenProducto(img, url, diferida = false) {
+            const candidatos = candidatosImagen(url);
+            if (!img || !candidatos.length) return false;
+            img.dataset.imageCandidates = JSON.stringify(candidatos);
+            img.dataset.imageIndex = '0';
+            img.onerror = manejarErrorImagenProducto;
+            if (diferida) {
+                img.dataset.src = candidatos[0];
+                img.loading = 'lazy';
+                img.decoding = 'async';
+            } else {
+                img.src = candidatos[0];
+            }
+            return true;
+        }
+
+        function manejarErrorImagenProducto() {
+            const img = this;
+            let candidatos = [];
+            try { candidatos = JSON.parse(img.dataset.imageCandidates || '[]'); } catch (_) {}
+            const siguiente = Number(img.dataset.imageIndex || 0) + 1;
+            if (siguiente < candidatos.length) {
+                img.dataset.imageIndex = String(siguiente);
+                img.src = candidatos[siguiente];
+                return;
+            }
+            if (img.id) { img.classList.add('hidden'); return; }
+            const placeholder = document.createElement('div');
+            placeholder.className = (img.className || '') + ' flex items-center justify-center bg-slate-100 text-slate-300';
+            placeholder.setAttribute('aria-label', 'Imagen no disponible');
+            placeholder.innerHTML = '<i class="fa-solid fa-box"></i>';
+            img.replaceWith(placeholder);
+        }
+
+        let observadorImagenesCatalogo = null;
+        function activarCargaDiferidaImagenes(contenedor) {
+            if (!contenedor) return;
+            if ('IntersectionObserver' in window) {
+                if (!observadorImagenesCatalogo) {
+                    observadorImagenesCatalogo = new IntersectionObserver((entradas, observador) => {
+                        entradas.forEach(entrada => {
+                            if (!entrada.isIntersecting) return;
+                            const img = entrada.target;
+                            if (img.dataset.src && !img.hasAttribute('src')) img.src = img.dataset.src;
+                            img.removeAttribute('data-src');
+                            observador.unobserve(img);
+                        });
+                    }, { root: null, rootMargin: '300px 0px', threshold: 0.01 });
+                }
+                contenedor.querySelectorAll('img[data-src]').forEach(img => observadorImagenesCatalogo.observe(img));
+            } else {
+                contenedor.querySelectorAll('img[data-src]').forEach(img => {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                });
+            }
         }
 
         function capturarYProcesarFoto(event) {
@@ -1032,7 +1109,8 @@
 
                 const data = await response.json();
 
-                inventario = {};
+                const inventarioAnterior = inventario || {};
+                const inventarioActualizado = {};
                 data.forEach(item => {
                     const keys = Object.keys(item);
                     const getVal = (nom) => {
@@ -1042,7 +1120,9 @@
 
                     const cod = String(getVal('codig') || '').trim();
                     if (cod) {
-                        inventario[cod] = {
+                        const fotoSheets = formatearUrlImagen(getVal('imagen') || getVal('foto') || getVal('url'));
+                        const fotoAnterior = inventarioAnterior[cod] && formatearUrlImagen(inventarioAnterior[cod].foto);
+                        inventarioActualizado[cod] = {
                             codigo: cod,
                             categoria: getVal('categor') || 'General',
                             nombre: getVal('product') || getVal('nombr') || 'Sin nombre',
@@ -1050,11 +1130,12 @@
                             precio: parsearNumero(getVal('venta')),
                             stock: parseInt(parsearNumero(getVal('stock actual') || getVal('stock'))),
                             stockMin: parseInt(parsearNumero(getVal('minimo')) || 2),
-                            foto: formatearUrlImagen(getVal('imagen') || getVal('foto') || getVal('url'))
+                            foto: fotoSheets || fotoAnterior || null
                         };
                     }
                 });
 
+                inventario = inventarioActualizado;
                 localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
                 actualizarBadge();
                 renderizarInventario();
@@ -1467,10 +1548,12 @@
             }
             panel.innerHTML = encontrados.map(p => `
                 <button type="button" role="option" onclick="seleccionarResultadoBusqueda('${String(p.codigo).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" class="w-full flex items-center gap-3 text-left px-3.5 py-3 border-b border-slate-200/60 last:border-b-0 hover:bg-emerald-50/70 active:bg-emerald-100/70 transition-colors cursor-pointer">
-                    ${p.foto ? `<img src="${p.foto}" class="w-11 h-11 rounded-xl object-cover bg-slate-100 shrink-0" onerror="this.style.display='none'">` : `<span class="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 shrink-0"><i class="fa-solid fa-box"></i></span>`}
+                    ${p.foto ? `<img data-product-image="1" data-url="${escaparTexto(p.foto)}" class="w-11 h-11 rounded-xl object-cover bg-slate-100 shrink-0" alt="" loading="lazy">` : `<span class="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 shrink-0"><i class="fa-solid fa-box"></i></span>`}
                     <span class="min-w-0 flex-1"><span class="block text-sm font-bold text-slate-800 truncate">${escaparTexto(p.nombre || 'Sin nombre')}</span><span class="block text-[11px] text-slate-500 font-mono truncate">${escaparTexto(p.codigo || '')}</span></span>
                     <span class="text-base font-black text-emerald-700 whitespace-nowrap">S/ ${Number(p.precio || 0).toFixed(2)}</span>
                 </button>`).join('');
+            panel.querySelectorAll('img[data-product-image]').forEach(img => prepararImagenProducto(img, img.dataset.url, true));
+            activarCargaDiferidaImagenes(panel);
             panel.classList.remove('hidden');
         }
 
@@ -1511,9 +1594,13 @@
 
             const imgEl = document.getElementById('card-img');
             if (item.foto) {
-                imgEl.src = item.foto;
+                imgEl.onerror = null;
+                imgEl.dataset.imageCandidates = '';
+                imgEl.dataset.imageIndex = '0';
+                prepararImagenProducto(imgEl, item.foto, false);
                 imgEl.classList.remove('hidden');
             } else {
+                imgEl.removeAttribute('src');
                 imgEl.classList.add('hidden');
             }
 
@@ -1747,7 +1834,7 @@
 
                     listaM.innerHTML += `
                         <div class="glass-card p-3.5 rounded-2xl flex items-center justify-between gap-3 active:scale-[0.99] transition-transform">
-                            ${item.foto ? `<img src="${item.foto}" class="w-12 h-12 rounded-xl object-cover border border-white/80 shadow-sm" onerror="this.remove()">` : '<div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-300 text-sm"><i class="fa-solid fa-box"></i></div>'}
+                            ${item.foto ? `<img data-product-image="1" data-url="${escaparTexto(item.foto)}" class="w-12 h-12 rounded-xl object-cover border border-white/80 shadow-sm bg-slate-100" alt="" loading="lazy">` : '<div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-300 text-sm"><i class="fa-solid fa-box"></i></div>'}
                             
                             <div class="flex-1 min-w-0 cursor-pointer" onclick="mostrarDetallesProducto('${cod}'); cambiarTab('verificar')">
                                 <h4 class="font-black text-slate-900 text-sm truncate">${item.nombre}</h4>
@@ -1774,7 +1861,7 @@
                     listaD.innerHTML += `
                         <tr class="hover:bg-emerald-50/40 transition-colors">
                             <td class="p-4">
-                                ${item.foto ? `<img src="${item.foto}" class="w-10 h-10 rounded-xl object-cover border border-white shadow-sm" onerror="this.remove()">` : '<div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-300"><i class="fa-solid fa-box text-xs"></i></div>'}
+                                ${item.foto ? `<img data-product-image="1" data-url="${escaparTexto(item.foto)}" class="w-10 h-10 rounded-xl object-cover border border-white shadow-sm bg-slate-100" alt="" loading="lazy">` : '<div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-300"><i class="fa-solid fa-box text-xs"></i></div>'}
                             </td>
                             <td class="p-4 font-mono font-bold text-xs text-slate-500">${cod}</td>
                             <td class="p-4 font-bold text-xs text-emerald-800">
@@ -1802,6 +1889,10 @@
                         </tr>
                     `;
                 }
+            });
+            [listaM, listaD].forEach(contenedor => {
+                contenedor.querySelectorAll('img[data-product-image]').forEach(img => prepararImagenProducto(img, img.dataset.url, true));
+                activarCargaDiferidaImagenes(contenedor);
             });
         }
 
