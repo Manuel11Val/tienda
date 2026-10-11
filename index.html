@@ -377,7 +377,6 @@
                         </div>
                         <div>
                             <label class="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-0.5">PRECIO VENTA (S/)</label>
-                            <!-- Teclado decimal en celular -->
                             <input type="number" step="0.10" id="nuevo-precio" inputmode="decimal" required placeholder="0.00" class="w-full p-2.5 bg-white/80 border border-slate-200/80 rounded-xl text-xs sm:text-sm font-black text-emerald-700 focus:outline-none">
                         </div>
                     </div>
@@ -390,12 +389,10 @@
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-0.5">STOCK INICIAL</label>
-                            <!-- Teclado numérico entero en celular -->
                             <input type="number" id="nuevo-stock" inputmode="numeric" pattern="[0-9]*" required placeholder="0" class="w-full p-2.5 bg-white/80 border border-slate-200/80 rounded-xl text-xs sm:text-sm font-black focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-0.5">COSTO (S/)</label>
-                            <!-- Teclado decimal en celular -->
                             <input type="number" step="0.10" id="nuevo-costo" inputmode="decimal" placeholder="0.00" class="w-full p-2.5 bg-white/80 border border-slate-200/80 rounded-xl text-xs sm:text-sm font-semibold focus:outline-none">
                         </div>
                     </div>
@@ -461,12 +458,10 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">PRECIO VENTA (S/)</label>
-                        <!-- Teclado decimal en celular -->
                         <input type="number" step="0.10" id="edit-precio" inputmode="decimal" required class="w-full p-3 bg-white/70 border border-slate-200/80 rounded-2xl text-sm font-black text-emerald-700 focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">STOCK TOTAL</label>
-                        <!-- Teclado numérico entero en celular -->
                         <input type="number" id="edit-stock" inputmode="numeric" pattern="[0-9]*" required class="w-full p-3 bg-white/70 border border-slate-200/80 rounded-2xl text-sm font-black focus:outline-none">
                     </div>
                 </div>
@@ -499,7 +494,7 @@
         </div>
     </div>
 
-    <!-- Modal de confirmación estilizado (sin alert/confirm nativo) -->
+    <!-- Modal de confirmación estilizado -->
     <div id="modal-confirmar-eliminar" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="glass-modal rounded-3xl p-5 max-w-xs w-full text-center space-y-3 border border-white shadow-2xl">
             <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-xl shadow-xs">
@@ -657,6 +652,7 @@
         let destinoEscaneo = 'verificar';
         let flashlightOn = false;
         let isProcessingScan = false;
+        let isCameraTransitioning = false; // Semáforo de prevención de estados concurrentes
         let fotoCapturadaBase64 = null;
         let fotoEdicionBase64 = null;
         let codigoAEliminarPendiente = null;
@@ -1132,88 +1128,89 @@
         }
 
         async function abrirCamara(destino) {
-            desbloquearAudioContext();
-            destinoEscaneo = destino;
-            flashlightOn = false;
-            isProcessingScan = false;
-            currentZoomLevel = 1.0;
-            supportsHardwareZoom = false;
+            // Prevenir doble toque y colisión de transiciones
+            if (isCameraTransitioning) return;
+            isCameraTransitioning = true;
 
-            // Verificación previa de contexto seguro (HTTPS o localhost)
-            if (window.isSecureContext === false && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
-                mostrarToast("La cámara requiere HTTPS o servidor web seguro", "fa-shield-halved", "text-rose-500");
-                return;
-            }
-
-            const btnTorch = document.getElementById('btn-torch');
-            if (btnTorch) btnTorch.classList.remove('bg-amber-400', 'text-slate-900');
-
-            const btnZoom = document.getElementById('btn-zoom');
-            if (btnZoom) {
-                btnZoom.innerText = '1x';
-                btnZoom.classList.remove('bg-emerald-500', 'text-slate-900');
-            }
-
-            // En iOS PWA es fundamental hacer visible el modal ANTES de pedir acceso a la cámara
-            document.getElementById('modal-scanner').classList.remove('hidden');
-
-            // En iOS Standalone / WebApp forzamos la solicitud nativa primero para que salte el diálogo de permiso
             try {
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    const tempStream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: { ideal: "environment" } }
-                    });
-                    // Liberamos el stream temporal de prueba de inmediato para que lo tome el lector óptico
-                    tempStream.getTracks().forEach(track => track.stop());
+                desbloquearAudioContext();
+                destinoEscaneo = destino;
+                flashlightOn = false;
+                isProcessingScan = false;
+                currentZoomLevel = 1.0;
+                supportsHardwareZoom = false;
+
+                if (window.isSecureContext === false && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+                    mostrarToast("La cámara requiere HTTPS o servidor web seguro", "fa-shield-halved", "text-rose-500");
+                    isCameraTransitioning = false;
+                    return;
                 }
-            } catch (permErr) {
-                console.warn("Validación de permiso previa:", permErr);
-            }
 
-            const config = {
-                fps: 24,
-                qrbox: function(viewfinderWidth, viewfinderHeight) {
-                    const w = Math.floor(viewfinderWidth * 0.90);
-                    const h = Math.floor(Math.max(160, viewfinderHeight * 0.58));
-                    return { width: Math.min(w, 360), height: Math.min(h, 240) };
-                },
-                aspectRatio: 1.0,
-                experimentalFeatures: {
-                    useBarCodeDetectorIfSupported: true
-                },
-                formatsToSupport: [
-                    Html5QrcodeSupportedFormats.EAN_13,
-                    Html5QrcodeSupportedFormats.EAN_8,
-                    Html5QrcodeSupportedFormats.UPC_A,
-                    Html5QrcodeSupportedFormats.UPC_E,
-                    Html5QrcodeSupportedFormats.CODE_128,
-                    Html5QrcodeSupportedFormats.CODE_39,
-                    Html5QrcodeSupportedFormats.CODE_93,
-                    Html5QrcodeSupportedFormats.ITF,
-                    Html5QrcodeSupportedFormats.CODABAR,
-                    Html5QrcodeSupportedFormats.DATA_MATRIX,
-                    Html5QrcodeSupportedFormats.QR_CODE
-                ]
-            };
+                const btnTorch = document.getElementById('btn-torch');
+                if (btnTorch) btnTorch.classList.remove('bg-amber-400', 'text-slate-900');
 
-            try {
+                const btnZoom = document.getElementById('btn-zoom');
+                if (btnZoom) {
+                    btnZoom.innerText = '1x';
+                    btnZoom.classList.remove('bg-emerald-500', 'text-slate-900');
+                }
+
+                // Mostrar el modal antes de arrancar (indispensable para Safari/WebKit)
+                document.getElementById('modal-scanner').classList.remove('hidden');
+
+                const scanView = document.getElementById("scanner-view");
+
+                // Limpieza total y segura de cualquier sesión o elemento previo
                 if (html5QrCode) {
-                    try { await html5QrCode.stop(); } catch (e) {}
+                    try {
+                        if (html5QrCode.isScanning) {
+                            await html5QrCode.stop();
+                        }
+                        await html5QrCode.clear();
+                    } catch (e) {
+                        console.warn("Limpieza de escáner previo:", e);
+                    }
                     html5QrCode = null;
                 }
-                html5QrCode = new Html5Qrcode("scanner-view");
+                if (scanView) scanView.innerHTML = '';
 
-                // Configuración compatible sin restricciones rígidas para evitar OverconstrainedError
-                const primaryConstraints = {
-                    facingMode: { ideal: "environment" }
+                const config = {
+                    fps: 24,
+                    qrbox: function(viewfinderWidth, viewfinderHeight) {
+                        const w = Math.floor(viewfinderWidth * 0.90);
+                        const h = Math.floor(Math.max(160, viewfinderHeight * 0.58));
+                        return { width: Math.min(w, 360), height: Math.min(h, 240) };
+                    },
+                    aspectRatio: 1.0,
+                    experimentalFeatures: {
+                        useBarCodeDetectorIfSupported: true
+                    },
+                    formatsToSupport: [
+                        Html5QrcodeSupportedFormats.EAN_13,
+                        Html5QrcodeSupportedFormats.EAN_8,
+                        Html5QrcodeSupportedFormats.UPC_A,
+                        Html5QrcodeSupportedFormats.UPC_E,
+                        Html5QrcodeSupportedFormats.CODE_128,
+                        Html5QrcodeSupportedFormats.CODE_39,
+                        Html5QrcodeSupportedFormats.CODE_93,
+                        Html5QrcodeSupportedFormats.ITF,
+                        Html5QrcodeSupportedFormats.CODABAR,
+                        Html5QrcodeSupportedFormats.DATA_MATRIX,
+                        Html5QrcodeSupportedFormats.QR_CODE
+                    ]
                 };
 
+                html5QrCode = new Html5Qrcode("scanner-view");
+
                 try {
-                    await html5QrCode.start(primaryConstraints, config, onScanSuccess, () => {});
-                } catch (firstErr) {
-                    console.warn("Intento con facingMode ideal falló, intentando fallback simple:", firstErr);
-                    // Fallback directo a cámara trasera básica o cualquier cámara disponible
                     await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
+                } catch (firstErr) {
+                    console.warn("Intento principal falló, reiniciando instancia para fallback:", firstErr);
+                    try { await html5QrCode.clear().catch(() => {}); } catch (e) {}
+                    if (scanView) scanView.innerHTML = '';
+                    
+                    html5QrCode = new Html5Qrcode("scanner-view");
+                    await html5QrCode.start({ facingMode: { ideal: "environment" } }, config, onScanSuccess, () => {});
                 }
 
                 verificarSoporteZoom();
@@ -1222,15 +1219,15 @@
                 const nombreError = err && err.name ? err.name : String(err);
                 
                 if (nombreError.includes("NotAllowedError") || nombreError.includes("PermissionDeniedError")) {
-                    mostrarToast("Permiso denegado. Habilita la cámara en los Ajustes del iPhone", "fa-lock", "text-amber-500");
+                    mostrarToast("Permiso denegado. Habilita la cámara en Ajustes de iOS", "fa-lock", "text-amber-500");
                 } else if (nombreError.includes("NotFoundError") || nombreError.includes("DevicesNotFoundError")) {
                     mostrarToast("No se detectó ninguna cámara disponible", "fa-video-slash", "text-rose-500");
-                } else if (window.isSecureContext === false) {
-                    mostrarToast("Abre la web mediante HTTPS para activar la cámara", "fa-lock", "text-rose-500");
                 } else {
-                    mostrarToast("Error al abrir cámara: " + (err.message || nombreError), "fa-triangle-exclamation", "text-rose-500");
+                    mostrarToast("No se pudo iniciar cámara, reintentando...", "fa-triangle-exclamation", "text-amber-500");
                 }
-                cerrarCamara();
+                await cerrarCamara();
+            } finally {
+                isCameraTransitioning = false;
             }
         }
 
@@ -1253,7 +1250,6 @@
             if (!html5QrCode || !html5QrCode.isScanning) return;
             const btnZoom = document.getElementById('btn-zoom');
 
-            // Alternar entre 1x, 2x y 3x
             if (currentZoomLevel === 1.0) currentZoomLevel = 2.0;
             else if (currentZoomLevel === 2.0) currentZoomLevel = 3.0;
             else currentZoomLevel = 1.0;
@@ -1268,12 +1264,10 @@
             }
 
             try {
-                // Intentar aplicar zoom nativo de cámara
                 await html5QrCode.applyVideoConstraints({
                     advanced: [{ zoom: currentZoomLevel }]
                 });
             } catch (e) {
-                // Si el dispositivo no soporta zoom por hardware, aplicar zoom CSS al video como lupa digital
                 const videoEl = document.querySelector("#scanner-view video");
                 if (videoEl) {
                     videoEl.style.transform = `scale(${currentZoomLevel})`;
@@ -1297,21 +1291,33 @@
         }
 
         async function cerrarCamara() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                await html5QrCode.stop().catch(() => {});
+            if (isCameraTransitioning) return;
+            isCameraTransitioning = true;
+
+            try {
+                if (html5QrCode) {
+                    if (html5QrCode.isScanning) {
+                        await html5QrCode.stop().catch(() => {});
+                    }
+                    await html5QrCode.clear().catch(() => {});
+                }
+            } catch (e) {
+                console.warn("Cierre de cámara:", e);
+            } finally {
                 html5QrCode = null;
+                const scanView = document.getElementById('scanner-view');
+                if (scanView) scanView.innerHTML = '';
+                document.getElementById('modal-scanner').classList.add('hidden');
+                isCameraTransitioning = false;
             }
-            const videoEl = document.querySelector("#scanner-view video");
-            if (videoEl) videoEl.style.transform = "scale(1)";
-            document.getElementById('modal-scanner').classList.add('hidden');
         }
 
-        function onScanSuccess(codigo) {
+        async function onScanSuccess(codigo) {
             if (isProcessingScan) return;
             isProcessingScan = true;
 
             vibrarYSonar();
-            cerrarCamara();
+            await cerrarCamara();
             const cod = String(codigo).trim();
 
             if (destinoEscaneo === 'registro') {
@@ -1614,7 +1620,6 @@
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Sheets & Drive`;
 
-            // Limpiar formulario
             document.getElementById('nuevo-codigo').value = '';
             document.getElementById('nuevo-nombre').value = '';
             document.getElementById('nuevo-precio').value = '';
@@ -1652,7 +1657,6 @@
                 if (coincideTexto && coincideCat) {
                     const badgeClass = item.stock <= item.stockMin ? 'bg-rose-500/15 text-rose-600 font-black' : 'bg-slate-100 text-slate-700 font-bold';
 
-                    // Tarjeta Móvil
                     listaM.innerHTML += `
                         <div class="glass-card p-3.5 rounded-2xl flex items-center justify-between gap-3 active:scale-[0.99] transition-transform">
                             ${item.foto ? `<img src="${item.foto}" class="w-12 h-12 rounded-xl object-cover border border-white/80 shadow-sm" onerror="this.remove()">` : '<div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-300 text-sm"><i class="fa-solid fa-box"></i></div>'}
@@ -1679,7 +1683,6 @@
                         </div>
                     `;
 
-                    // Fila Tabla Escritorio
                     listaD.innerHTML += `
                         <tr class="hover:bg-emerald-50/40 transition-colors">
                             <td class="p-4">
