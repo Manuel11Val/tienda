@@ -4,28 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Bodega & Ropa</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
-        /* Tipografía y comportamiento estilo iOS */
         body {
             -webkit-tap-highlight-color: transparent;
             user-select: none;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
         }
 
-        /* Efecto Liquid Glass / Frosted Glass */
         .liquid-glass {
-            background: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(25px) saturate(190%);
             -webkit-backdrop-filter: blur(25px) saturate(190%);
             border: 1px solid rgba(255, 255, 255, 0.7);
         }
 
         .liquid-glass-card {
-            background: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.78);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.85);
@@ -33,7 +30,7 @@
         }
 
         .liquid-glass-dock {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.82);
             backdrop-filter: blur(30px) saturate(200%);
             -webkit-backdrop-filter: blur(30px) saturate(200%);
             border: 1px solid rgba(255, 255, 255, 0.8);
@@ -47,20 +44,19 @@
             height: 100% !important;
         }
 
-        /* Ocultar scrollbar visual */
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-100 via-rose-50/30 to-sky-50 text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden">
 
-    <!-- Orbes de luz líquida de fondo tipo Apple Music -->
+    <!-- Orbes decorativos estilo iOS -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div class="absolute -top-24 -left-20 w-80 h-80 bg-pink-300/30 rounded-full blur-3xl"></div>
         <div class="absolute top-1/3 -right-20 w-96 h-96 bg-blue-300/25 rounded-full blur-3xl"></div>
         <div class="absolute -bottom-20 left-1/4 w-80 h-80 bg-amber-200/25 rounded-full blur-3xl"></div>
     </div>
 
-    <!-- Indicador de Pull to Refresh (Deslizar hacia abajo) -->
+    <!-- Indicador de Pull to Refresh -->
     <div id="ptr-indicator" class="fixed top-0 left-0 right-0 flex justify-center items-center pointer-events-none z-50 transition-transform duration-200" style="transform: translateY(-60px);">
         <div class="liquid-glass px-4 py-2 rounded-full shadow-lg flex items-center gap-2 border border-white/60">
             <i id="ptr-icon" class="fa-solid fa-arrows-rotate text-blue-600 text-xs transition-transform duration-300"></i>
@@ -68,7 +64,7 @@
         </div>
     </div>
 
-    <!-- Barra de Navegación Superior Liquid Glass -->
+    <!-- Barra Superior -->
     <header class="sticky top-0 z-40 px-5 pt-12 pb-3.5 liquid-glass border-b border-white/40">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div>
@@ -87,13 +83,12 @@
         </div>
     </header>
 
-    <!-- Contenido Principal -->
+    <!-- Contenedor Principal -->
     <main id="scroll-container" class="relative z-10 max-w-md mx-auto w-full p-4 flex-1 pb-32 space-y-4">
 
         <!-- ================= TAB 1: CONSULTAR / VENDER ================= -->
         <section id="tab-verificar" class="space-y-4">
             
-            <!-- Botón Grande de Escaneo tipo Apple Glass -->
             <button onclick="abrirCamara('verificar')" class="w-full active:scale-[0.98] transition-all duration-200 liquid-glass-card p-4 rounded-3xl flex items-center justify-between group">
                 <div class="flex items-center gap-3.5">
                     <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/30">
@@ -109,10 +104,10 @@
                 </div>
             </button>
 
-            <!-- Barra de búsqueda manual Liquid -->
+            <!-- Buscador Manual -->
             <div class="liquid-glass-card p-2 rounded-2xl flex gap-2 items-center">
                 <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs ml-3"></i>
-                <input type="text" id="input-buscar-codigo" placeholder="Escribir código o nombre..." class="w-full py-2 bg-transparent text-sm focus:outline-none font-medium placeholder-slate-400">
+                <input type="text" id="input-buscar-codigo" placeholder="Escribir código o nombre..." class="w-full py-2 bg-transparent text-sm focus:outline-none font-medium placeholder-slate-400" onkeydown="if(event.key==='Enter') buscarPorCodigoManual()">
                 <button onclick="buscarPorCodigoManual()" class="bg-slate-900 active:scale-95 transition-transform text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm">
                     Buscar
                 </button>
@@ -156,7 +151,7 @@
                     <i class="fa-solid fa-barcode"></i>
                 </div>
                 <h4 class="font-extrabold text-slate-800 text-sm">Escáner listo</h4>
-                <p class="text-xs text-slate-400 mt-1 max-w-[220px] mx-auto">Enfoca cualquier código de barras o escribe para consultar precio y existencias.</p>
+                <p class="text-xs text-slate-400 mt-1 max-w-[220px] mx-auto">Enfoca cualquier código de barras o escribe para consultar precio y stock.</p>
             </div>
         </section>
 
@@ -164,18 +159,18 @@
         <section id="tab-inventario" class="space-y-3 hidden">
             <div class="liquid-glass-card p-2 rounded-2xl flex items-center gap-2">
                 <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs ml-3"></i>
-                <input type="text" id="filtro-buscar" onkeyup="renderizarInventario()" placeholder="Filtrar catálogo..." class="w-full py-1.5 bg-transparent text-sm focus:outline-none font-medium placeholder-slate-400">
+                <input type="text" id="filtro-buscar" onkeyup="renderizarInventario()" placeholder="Filtrar por nombre o código..." class="w-full py-1.5 bg-transparent text-sm focus:outline-none font-medium placeholder-slate-400">
             </div>
 
             <div id="lista-inventario" class="space-y-2.5"></div>
         </section>
 
-        <!-- ================= TAB 3: REGISTRO RÁPIDO ================= -->
+        <!-- ================= TAB 3: REGISTRO DIRECTO A LA NUBE ================= -->
         <section id="tab-registro" class="space-y-4 hidden">
             <div class="liquid-glass-card p-5 rounded-3xl space-y-4">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                     <h3 class="font-black text-slate-800 text-base flex items-center gap-2">
-                        <i class="fa-solid fa-plus-circle text-blue-600"></i> Registrar Mercadería
+                        <i class="fa-solid fa-cloud-arrow-up text-blue-600"></i> Registrar en Google Sheets
                     </h3>
                     <button onclick="abrirCamara('registro')" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-200/60 active:scale-95">
                         <i class="fa-solid fa-camera mr-1"></i> Escanear
@@ -187,26 +182,44 @@
                         <label class="block text-[11px] font-bold text-slate-500 mb-1">CÓDIGO DE BARRAS</label>
                         <input type="text" id="nuevo-codigo" required placeholder="77501..." class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 mb-1">NOMBRE DEL PRODUCTO / PRENDA</label>
-                        <input type="text" id="nuevo-nombre" required placeholder="Ej. Gaseosa / Polo Talla M" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
+
                     <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 mb-1">CATEGORÍA</label>
+                            <select id="nuevo-categoria" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <option value="Bodega">Bodega</option>
+                                <option value="Ropa">Ropa</option>
+                            </select>
+                        </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 mb-1">PRECIO VENTA (S/)</label>
                             <input type="number" step="0.10" id="nuevo-precio" required placeholder="0.00" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-bold text-emerald-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1">NOMBRE DEL PRODUCTO / PRENDA</label>
+                        <input type="text" id="nuevo-nombre" required placeholder="Ej. Coca-Cola 500ml / Polo M" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 mb-1">STOCK INICIAL</label>
                             <input type="number" id="nuevo-stock" required placeholder="0" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 mb-1">COSTO (Opcional S/)</label>
+                            <input type="number" step="0.10" id="nuevo-costo" placeholder="0.00" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
                     </div>
+
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 mb-1">IMAGEN URL (Drive o Web)</label>
                         <input type="url" id="nuevo-foto" placeholder="https://..." class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 active:scale-98 transition-transform text-white py-3.5 rounded-2xl font-bold text-sm shadow-md mt-2">
-                        Guardar Producto
+
+                    <button type="submit" id="btn-guardar-nuevo" class="w-full bg-blue-600 active:scale-98 transition-transform text-white py-3.5 rounded-2xl font-bold text-sm shadow-md mt-2 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Google Sheets
                     </button>
                 </form>
             </div>
@@ -214,8 +227,8 @@
 
     </main>
 
-    <!-- ================= HOJA MODAL INFERIOR (BOTTOM-SHEET) DE EDICIÓN ================= -->
-    <div id="modal-edicion" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 hidden flex flex-col justify-end transition-opacity duration-300">
+    <!-- Bottom Sheet de Edición -->
+    <div id="modal-edicion" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 hidden flex flex-col justify-end">
         <div class="liquid-glass-card rounded-t-[32px] p-6 max-w-md mx-auto w-full space-y-4 max-h-[85vh] overflow-y-auto">
             <div class="w-12 h-1.5 bg-slate-300/80 rounded-full mx-auto -mt-2 mb-2"></div>
             
@@ -229,9 +242,9 @@
                 </button>
             </div>
 
-            <!-- Suma rápida de stock fardos -->
+            <!-- Reposición Rápida -->
             <div class="space-y-1.5">
-                <span class="text-[11px] font-bold text-slate-500">REPOSICIÓN RÁPIDA DE STOCK</span>
+                <span class="text-[11px] font-bold text-slate-500">SUMAR FARDOS / PAQUETES</span>
                 <div class="grid grid-cols-4 gap-2">
                     <button onclick="ajustarStockDesdeEdicion(1)" class="bg-white/80 border border-slate-200 py-2 rounded-xl text-xs font-bold active:scale-95">+1</button>
                     <button onclick="ajustarStockDesdeEdicion(6)" class="bg-white/80 border border-slate-200 py-2 rounded-xl text-xs font-bold active:scale-95">+6</button>
@@ -258,19 +271,17 @@
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-500 mb-1">IMAGEN URL</label>
-                    <input type="text" id="edit-foto" placeholder="URL de Google Drive o web" class="w-full p-2.5 bg-white/70 border border-slate-200 rounded-xl text-xs focus:outline-none">
+                    <input type="text" id="edit-foto" placeholder="URL de imagen" class="w-full p-2.5 bg-white/70 border border-slate-200 rounded-xl text-xs focus:outline-none">
                 </div>
 
-                <div class="flex gap-2 pt-2">
-                    <button type="submit" class="flex-1 bg-blue-600 active:scale-98 text-white py-3 rounded-2xl font-bold text-sm shadow-md">
-                        Guardar Cambios
-                    </button>
-                </div>
+                <button type="submit" class="w-full bg-blue-600 active:scale-98 text-white py-3 rounded-2xl font-bold text-sm shadow-md">
+                    Guardar Cambios en Sheets
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- ================= MODAL CÁMARA ESCÁNER ================= -->
+    <!-- Modal Cámara Escáner -->
     <div id="modal-scanner" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex flex-col justify-between p-5">
         <div class="flex justify-between items-center text-white pt-6">
             <div>
@@ -284,7 +295,6 @@
 
         <div class="w-full max-w-xs mx-auto my-auto relative">
             <div id="scanner-view" class="w-full aspect-square bg-slate-900 rounded-3xl overflow-hidden border border-white/20 shadow-2xl"></div>
-            <!-- Mirilla estilo iOS -->
             <div class="absolute inset-6 border-2 border-dashed border-amber-300/80 rounded-2xl pointer-events-none flex items-center justify-center">
                 <div class="w-full h-0.5 bg-red-500/80 shadow-lg shadow-red-500"></div>
             </div>
@@ -295,7 +305,7 @@
         </div>
     </div>
 
-    <!-- Barra Inferior de Navegación Flotante (Dock Liquid Glass) -->
+    <!-- Dock Inferior Flotante -->
     <nav class="fixed bottom-4 left-4 right-4 max-w-md mx-auto z-40">
         <div class="liquid-glass-dock rounded-3xl px-6 py-2.5 flex justify-between items-center">
             <button onclick="cambiarTab('verificar')" id="btn-tab-verificar" class="flex flex-col items-center gap-1 text-blue-600 font-extrabold text-[10px] active:scale-90 transition-transform">
@@ -310,7 +320,7 @@
         </div>
     </nav>
 
-    <!-- Script de Lógica, Gestos y Sincronización -->
+    <!-- Script de Lógica -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxxYR9UR6hvRh8TVK_cpLKVlGR68fRS95F5LmcffYf4f49DU9xZkcAxZzyx1nab71a7/exec";
 
@@ -319,16 +329,23 @@
         let productoSeleccionado = null;
         let destinoEscaneo = 'verificar';
 
-        // ================= GESTO: PULL TO REFRESH =================
+        // Función de normalización de texto (elimina tildes, mayúsculas y espacios extra)
+        function normalizarTexto(txt) {
+            return String(txt || '')
+                .trim()
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+        }
+
+        // Pull to Refresh
         let startY = 0;
         let pullDistance = 0;
         const ptrIndicator = document.getElementById('ptr-indicator');
         const ptrIcon = document.getElementById('ptr-icon');
 
         window.addEventListener('touchstart', (e) => {
-            if (window.scrollY === 0) {
-                startY = e.touches[0].pageY;
-            }
+            if (window.scrollY === 0) startY = e.touches[0].pageY;
         }, { passive: true });
 
         window.addEventListener('touchmove', (e) => {
@@ -355,7 +372,6 @@
             pullDistance = 0;
         });
 
-        // Limpiador numérico robusto
         function parsearNumero(val) {
             if (typeof val === 'number') return isNaN(val) ? 0 : val;
             if (!val) return 0;
@@ -366,7 +382,6 @@
             return isNaN(num) ? 0 : num;
         }
 
-        // Conversor automático de URLs de Google Drive a Miniaturas
         function formatearUrlImagen(url) {
             if (!url) return null;
             url = String(url).trim();
@@ -397,7 +412,6 @@
             if (navigator.vibrate) navigator.vibrate(60);
         }
 
-        // Carga de Google Sheets
         async function cargarInventarioDesdeSheets(mostrarAlerta = false) {
             const dot = document.getElementById('status-dot');
             dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
@@ -410,7 +424,7 @@
                 data.forEach(item => {
                     const keys = Object.keys(item);
                     const getVal = (nom) => {
-                        const k = keys.find(x => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(nom));
+                        const k = keys.find(x => normalizarTexto(x).includes(normalizarTexto(nom)));
                         return k ? item[k] : '';
                     };
 
@@ -432,11 +446,11 @@
                 localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
                 actualizarBadge();
                 dot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400";
-                if (mostrarAlerta) alert("Catálogo actualizado desde Sheets.");
+                if (mostrarAlerta) alert("Inventario actualizado desde Sheets.");
                 renderizarInventario();
             } catch (e) {
                 dot.className = "w-2 h-2 rounded-full bg-red-400";
-                console.warn("Fallo de red, usando memoria local:", e);
+                console.warn("Error de conexión:", e);
                 actualizarBadge();
             }
         }
@@ -445,7 +459,6 @@
             document.getElementById('badge-total').innerText = `${Object.keys(inventario).length} prod.`;
         }
 
-        // Pestañas
         function cambiarTab(tab) {
             ['verificar', 'inventario', 'registro'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
@@ -457,7 +470,6 @@
             if (tab === 'inventario') renderizarInventario();
         }
 
-        // Escáner Cámara
         async function abrirCamara(destino) {
             destinoEscaneo = destino;
             document.getElementById('modal-scanner').classList.remove('hidden');
@@ -497,40 +509,57 @@
             document.getElementById('modal-scanner').classList.add('hidden');
         }
 
-        // Flujo al escanear código
         function onScanSuccess(codigo) {
             vibrarYSonar();
             cerrarCamara();
+            const codLimpio = String(codigo).trim();
 
             if (destinoEscaneo === 'registro') {
-                document.getElementById('nuevo-codigo').value = codigo;
+                document.getElementById('nuevo-codigo').value = codLimpio;
                 return;
             }
 
-            // Si está en modo verificar:
-            if (inventario[codigo]) {
-                mostrarDetallesProducto(codigo);
+            // Buscar coincidencia directa
+            const match = Object.values(inventario).find(p => normalizarTexto(p.codigo) === normalizarTexto(codLimpio));
+
+            if (match) {
+                mostrarDetallesProducto(match.codigo);
             } else {
-                // Si NO EXISTE, pregunta si desea darlo de alta
-                if (confirm(`El código "${codigo}" no existe en inventario.\n\n¿Deseas darlo de alta ahora?`)) {
-                    document.getElementById('nuevo-codigo').value = codigo;
+                if (confirm(`El código "${codLimpio}" no existe en Sheets.\n\n¿Deseas registrar este nuevo producto?`)) {
+                    document.getElementById('nuevo-codigo').value = codLimpio;
                     cambiarTab('registro');
                     setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
                 }
             }
         }
 
+        // Búsqueda inteligente por código o por nombre
         function buscarPorCodigoManual() {
-            const val = document.getElementById('input-buscar-codigo').value.trim();
-            if (!val) return;
-            let match = inventario[val] || Object.values(inventario).find(p => p.nombre.toLowerCase().includes(val.toLowerCase()));
+            const rawVal = document.getElementById('input-buscar-codigo').value.trim();
+            if (!rawVal) return;
+
+            const q = normalizarTexto(rawVal);
+
+            // 1. Coincidencia exacta de código
+            let match = Object.values(inventario).find(p => normalizarTexto(p.codigo) === q);
+
+            // 2. Coincidencia parcial de código
+            if (!match) {
+                match = Object.values(inventario).find(p => normalizarTexto(p.codigo).includes(q));
+            }
+
+            // 3. Coincidencia en el nombre (ignora tildes y mayúsculas)
+            if (!match) {
+                match = Object.values(inventario).find(p => normalizarTexto(p.nombre).includes(q));
+            }
 
             if (match) {
                 mostrarDetallesProducto(match.codigo);
             } else {
-                if (confirm(`No se encontró "${val}". ¿Quieres registrarlo ahora?`)) {
-                    document.getElementById('nuevo-codigo').value = val;
+                if (confirm(`No se encontró "${rawVal}".\n\n¿Deseas darlo de alta ahora?`)) {
+                    document.getElementById('nuevo-codigo').value = rawVal;
                     cambiarTab('registro');
+                    setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
                 }
             }
         }
@@ -558,34 +587,32 @@
             document.getElementById('card-vacio').classList.add('hidden');
         }
 
-        // Venta (-1) con sincronización en la nube
+        async function enviarSheets(payload) {
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) {
+                console.error("Error al enviar a Sheets:", e);
+            }
+        }
+
         async function venderUnidad() {
             if (productoSeleccionado && inventario[productoSeleccionado]) {
                 if (inventario[productoSeleccionado].stock > 0) {
                     inventario[productoSeleccionado].stock -= 1;
                     localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
                     mostrarDetallesProducto(productoSeleccionado);
-                    sincronizarConSheets(productoSeleccionado, -1);
+                    enviarSheets({ accion: "actualizarStock", codigo: productoSeleccionado, delta: -1 });
                 } else {
                     alert("¡Sin unidades disponibles!");
                 }
             }
         }
 
-        async function sincronizarConSheets(codigo, delta) {
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ accion: "actualizarStock", codigo: codigo, delta: delta })
-                });
-            } catch (e) {
-                console.error("Error sincronizando:", e);
-            }
-        }
-
-        // ================= EDICIÓN DESDE INVENTARIO =================
         function abrirModalEdicion(codigo) {
             const item = inventario[codigo];
             if (!item) return;
@@ -609,15 +636,13 @@
             input.value = parseInt(input.value || 0) + delta;
         }
 
-        function guardarCambiosEdicion(e) {
+        async function guardarCambiosEdicion(e) {
             e.preventDefault();
             const codigo = document.getElementById('edit-codigo').value;
             const nuevoNombre = document.getElementById('edit-nombre').value;
             const nuevoPrecio = parseFloat(document.getElementById('edit-precio').value);
             const nuevoStock = parseInt(document.getElementById('edit-stock').value);
             const nuevaFoto = formatearUrlImagen(document.getElementById('edit-foto').value);
-
-            const delta = nuevoStock - inventario[codigo].stock;
 
             inventario[codigo].nombre = nuevoNombre;
             inventario[codigo].precio = nuevoPrecio;
@@ -628,27 +653,42 @@
             cerrarModalEdicion();
             renderizarInventario();
 
-            if (productoSeleccionado === codigo) {
-                mostrarDetallesProducto(codigo);
-            }
+            if (productoSeleccionado === codigo) mostrarDetallesProducto(codigo);
 
-            if (delta !== 0) sincronizarConSheets(codigo, delta);
-            alert("Producto actualizado.");
+            // Sincronizar cambios en la fila de Google Sheets
+            enviarSheets({
+                accion: "editarProducto",
+                codigo: codigo,
+                nombre: nuevoNombre,
+                precio: nuevoPrecio,
+                stock: nuevoStock,
+                foto: nuevaFoto
+            });
+
+            alert("Producto actualizado en Google Sheets.");
         }
 
-        function guardarNuevoProducto(e) {
+        // GUARDAR PRODUCTO NUEVO DIRECTO EN GOOGLE SHEETS
+        async function guardarNuevoProducto(e) {
             e.preventDefault();
+            const btn = document.getElementById('btn-guardar-nuevo');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Guardando en Sheets...`;
+
             const codigo = document.getElementById('nuevo-codigo').value.trim();
+            const categoria = document.getElementById('nuevo-categoria').value;
             const nombre = document.getElementById('nuevo-nombre').value.trim();
             const precio = parseFloat(document.getElementById('nuevo-precio').value);
+            const precioCosto = parseFloat(document.getElementById('nuevo-costo').value || 0);
             const stock = parseInt(document.getElementById('nuevo-stock').value);
             const foto = formatearUrlImagen(document.getElementById('nuevo-foto').value);
 
+            // Guardar local inmediato
             inventario[codigo] = {
                 codigo,
-                categoria: "General",
+                categoria,
                 nombre,
-                precioCosto: 0,
+                precioCosto,
                 precio,
                 stock,
                 stockMin: 2,
@@ -657,20 +697,39 @@
 
             localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
             actualizarBadge();
+
+            // Enviar a Google Sheets
+            await enviarSheets({
+                accion: "crearProducto",
+                codigo: codigo,
+                categoria: categoria,
+                nombre: nombre,
+                precioCosto: precioCosto,
+                precio: precio,
+                stock: stock,
+                stockMin: 2,
+                foto: foto
+            });
+
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Google Sheets`;
+
+            // Limpiar formulario
             document.getElementById('nuevo-codigo').value = '';
             document.getElementById('nuevo-nombre').value = '';
             document.getElementById('nuevo-precio').value = '';
+            document.getElementById('nuevo-costo').value = '';
             document.getElementById('nuevo-stock').value = '';
             document.getElementById('nuevo-foto').value = '';
 
             mostrarDetallesProducto(codigo);
             cambiarTab('verificar');
-            alert("Guardado localmente. Recuerda agregarlo a tu Google Sheet para respaldo permanente.");
+            alert(`¡"${nombre}" guardado y sincronizado con tu Google Sheet!`);
         }
 
         function renderizarInventario() {
             const lista = document.getElementById('lista-inventario');
-            const filtro = document.getElementById('filtro-buscar').value.toLowerCase();
+            const filtro = normalizarTexto(document.getElementById('filtro-buscar').value);
             lista.innerHTML = '';
 
             const keys = Object.keys(inventario);
@@ -681,7 +740,7 @@
 
             keys.forEach(cod => {
                 const item = inventario[cod];
-                if (item.nombre.toLowerCase().includes(filtro) || cod.includes(filtro)) {
+                if (normalizarTexto(item.nombre).includes(filtro) || normalizarTexto(cod).includes(filtro)) {
                     lista.innerHTML += `
                         <div class="liquid-glass-card p-3 rounded-2xl flex items-center justify-between gap-3 active:scale-[0.99] transition-transform">
                             ${item.foto ? `<img src="${item.foto}" class="w-12 h-12 rounded-xl object-cover border border-white/60 shadow-sm" onerror="this.remove()">` : ''}
@@ -707,7 +766,6 @@
             });
         }
 
-        // Carga inicial
         actualizarBadge();
         cargarInventarioDesdeSheets();
     </script>
