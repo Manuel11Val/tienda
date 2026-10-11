@@ -518,12 +518,15 @@
     <div id="modal-scanner" class="fixed inset-0 bg-black/95 backdrop-blur-2xl z-50 hidden flex flex-col justify-between p-6">
         <div class="flex justify-between items-center text-white safe-modal-top z-10 max-w-md mx-auto w-full">
             <div>
-                <span class="text-[10px] font-black tracking-widest uppercase text-emerald-400">Escáner Óptico</span>
+                <span class="text-[10px] font-black tracking-widest uppercase text-emerald-400">Escáner Óptico Pro</span>
                 <h3 class="font-black text-lg text-white">Centra el código</h3>
             </div>
             
             <div class="flex items-center gap-2">
-                <button id="btn-torch" onclick="toggleFlashlight()" class="w-10 h-10 bg-white/15 active:bg-white/30 rounded-full flex items-center justify-center text-white text-sm border border-white/20 transition-all cursor-pointer">
+                <button id="btn-zoom" onclick="toggleZoom()" class="w-10 h-10 bg-white/15 active:bg-white/30 rounded-full flex items-center justify-center text-white text-xs font-black border border-white/20 transition-all cursor-pointer" title="Cambiar Zoom">
+                    1x
+                </button>
+                <button id="btn-torch" onclick="toggleFlashlight()" class="w-10 h-10 bg-white/15 active:bg-white/30 rounded-full flex items-center justify-center text-white text-sm border border-white/20 transition-all cursor-pointer" title="Linterna">
                     <i id="torch-icon" class="fa-solid fa-bolt"></i>
                 </button>
                 <button onclick="cerrarCamara()" class="w-10 h-10 bg-white/15 active:bg-white/30 rounded-full flex items-center justify-center text-white text-base border border-white/20 transition-all cursor-pointer">
@@ -547,8 +550,9 @@
             </div>
         </div>
 
-        <div class="text-center text-white/50 text-xs font-semibold pb-4">
-            Lectura automática • EAN-13, UPC, Code 128 y QR
+        <div class="text-center text-white/60 text-xs font-semibold pb-4 space-y-0.5">
+            <div>Lectura ultra-rápida con hardware óptico</div>
+            <div class="text-[10px] text-white/40">Usa <b>2x</b> para códigos pequeños o activa la <b>linterna</b></div>
         </div>
     </div>
 
@@ -656,6 +660,9 @@
         let fotoCapturadaBase64 = null;
         let fotoEdicionBase64 = null;
         let codigoAEliminarPendiente = null;
+
+        let currentZoomLevel = 1.0;
+        let supportsHardwareZoom = false;
 
         let toastTimeout = null;
         function mostrarToast(mensaje, icono = "fa-circle-check", color = "text-emerald-600") {
@@ -1129,21 +1136,53 @@
             destinoEscaneo = destino;
             flashlightOn = false;
             isProcessingScan = false;
-            document.getElementById('btn-torch').classList.remove('bg-amber-400', 'text-slate-900');
+            currentZoomLevel = 1.0;
+            supportsHardwareZoom = false;
+
+            const btnTorch = document.getElementById('btn-torch');
+            if (btnTorch) btnTorch.classList.remove('bg-amber-400', 'text-slate-900');
+
+            const btnZoom = document.getElementById('btn-zoom');
+            if (btnZoom) {
+                btnZoom.innerText = '1x';
+                btnZoom.classList.remove('bg-emerald-500', 'text-slate-900');
+            }
+
             document.getElementById('modal-scanner').classList.remove('hidden');
 
+            // Configuración avanzada de escaneo: mayor área, aceleración nativa y todos los formatos de retail/ropa
             const config = {
-                fps: 20,
-                qrbox: { width: 250, height: 170 },
+                fps: 24,
+                qrbox: function(viewfinderWidth, viewfinderHeight) {
+                    // Área panorámica adaptable para no cortar códigos largos (Code 128 / ITF)
+                    const w = Math.floor(viewfinderWidth * 0.90);
+                    const h = Math.floor(Math.max(160, viewfinderHeight * 0.58));
+                    return { width: Math.min(w, 360), height: Math.min(h, 240) };
+                },
                 aspectRatio: 1.0,
+                experimentalFeatures: {
+                    useBarCodeDetectorIfSupported: true // Activa el chip de reconocimiento nativo de Android/iOS
+                },
                 formatsToSupport: [
                     Html5QrcodeSupportedFormats.EAN_13,
                     Html5QrcodeSupportedFormats.EAN_8,
                     Html5QrcodeSupportedFormats.UPC_A,
                     Html5QrcodeSupportedFormats.UPC_E,
                     Html5QrcodeSupportedFormats.CODE_128,
+                    Html5QrcodeSupportedFormats.CODE_39,    // Muy común en ropa, textiles y calzado
+                    Html5QrcodeSupportedFormats.CODE_93,
+                    Html5QrcodeSupportedFormats.ITF,        // Clave en cajas, fardos de gaseosas y empaques grandes
+                    Html5QrcodeSupportedFormats.CODABAR,
+                    Html5QrcodeSupportedFormats.DATA_MATRIX,
                     Html5QrcodeSupportedFormats.QR_CODE
                 ]
+            };
+
+            // Solicitud de alta resolución para enfocar barras finas con nitidez
+            const cameraConstraints = {
+                facingMode: { ideal: "environment" },
+                width: { min: 1280, ideal: 1920 },
+                height: { min: 720, ideal: 1080 }
             };
 
             try {
@@ -1152,10 +1191,68 @@
                     html5QrCode = null;
                 }
                 html5QrCode = new Html5Qrcode("scanner-view");
-                await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
+
+                try {
+                    await html5QrCode.start(cameraConstraints, config, onScanSuccess, () => {});
+                } catch (resErr) {
+                    // Si el sensor no soporta las restricciones ideales, inicia en modo automático
+                    await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
+                }
+
+                // Detectar si la lente del teléfono tiene soporte para zoom óptico/digital
+                verificarSoporteZoom();
             } catch (err) {
                 mostrarToast("Verifica permisos de cámara", "fa-triangle-exclamation", "text-rose-500");
                 cerrarCamara();
+            }
+        }
+
+        function verificarSoporteZoom() {
+            try {
+                const videoEl = document.querySelector("#scanner-view video");
+                if (videoEl && videoEl.srcObject) {
+                    const track = videoEl.srcObject.getVideoTracks()[0];
+                    if (track && track.getCapabilities) {
+                        const caps = track.getCapabilities();
+                        if (caps.zoom) {
+                            supportsHardwareZoom = true;
+                        }
+                    }
+                }
+            } catch (e) {}
+        }
+
+        async function toggleZoom() {
+            if (!html5QrCode || !html5QrCode.isScanning) return;
+            const btnZoom = document.getElementById('btn-zoom');
+
+            // Alternar entre 1x, 2x y 3x
+            if (currentZoomLevel === 1.0) currentZoomLevel = 2.0;
+            else if (currentZoomLevel === 2.0) currentZoomLevel = 3.0;
+            else currentZoomLevel = 1.0;
+
+            if (btnZoom) {
+                btnZoom.innerText = `${currentZoomLevel}x`;
+                if (currentZoomLevel > 1.0) {
+                    btnZoom.classList.add('bg-emerald-500', 'text-slate-900');
+                } else {
+                    btnZoom.classList.remove('bg-emerald-500', 'text-slate-900');
+                }
+            }
+
+            try {
+                // Intentar aplicar zoom nativo de cámara
+                await html5QrCode.applyVideoConstraints({
+                    advanced: [{ zoom: currentZoomLevel }]
+                });
+            } catch (e) {
+                // Si el dispositivo no soporta zoom por hardware, aplicar zoom CSS al video como lupa digital
+                const videoEl = document.querySelector("#scanner-view video");
+                if (videoEl) {
+                    videoEl.style.transform = `scale(${currentZoomLevel})`;
+                    videoEl.style.transformOrigin = "center center";
+                    videoEl.style.transition = "transform 0.2s ease";
+                }
             }
         }
 
@@ -1177,6 +1274,8 @@
                 await html5QrCode.stop().catch(() => {});
                 html5QrCode = null;
             }
+            const videoEl = document.querySelector("#scanner-view video");
+            if (videoEl) videoEl.style.transform = "scale(1)";
             document.getElementById('modal-scanner').classList.add('hidden');
         }
 
