@@ -4,11 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Bodega & Ropa</title>
+
+    <!-- Meta Tags para iOS Web App nativa -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mi Tienda">
+    <meta name="theme-color" content="#f8fafc">
+
+    <!-- Enlaces para el ícono de iPhone -->
+    <link id="ios-touch-icon" rel="apple-touch-icon" href="">
+    <link id="ios-favicon" rel="icon" type="image/png" href="">
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Html5-Qrcode -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
     <style>
         body {
             -webkit-tap-highlight-color: transparent;
@@ -18,14 +29,14 @@
         }
 
         .glass-nav {
-            background: rgba(255, 255, 255, 0.68);
+            background: rgba(255, 255, 255, 0.72);
             backdrop-filter: blur(28px) saturate(210%);
             -webkit-backdrop-filter: blur(28px) saturate(210%);
             border-bottom: 1px solid rgba(255, 255, 255, 0.7);
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.76);
+            background: rgba(255, 255, 255, 0.78);
             backdrop-filter: blur(24px) saturate(190%);
             -webkit-backdrop-filter: blur(24px) saturate(190%);
             border: 1px solid rgba(255, 255, 255, 0.85);
@@ -33,7 +44,7 @@
         }
 
         .glass-dock {
-            background: rgba(255, 255, 255, 0.82);
+            background: rgba(255, 255, 255, 0.84);
             backdrop-filter: blur(32px) saturate(220%);
             -webkit-backdrop-filter: blur(32px) saturate(220%);
             border: 1px solid rgba(255, 255, 255, 0.9);
@@ -41,7 +52,7 @@
         }
 
         .glass-modal {
-            background: rgba(255, 255, 255, 0.88);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(35px) saturate(200%);
             -webkit-backdrop-filter: blur(35px) saturate(200%);
             border-top: 1px solid rgba(255, 255, 255, 0.95);
@@ -69,11 +80,19 @@
 </head>
 <body class="bg-gradient-to-br from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0] text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden">
 
-    <!-- Orbes atmosféricos -->
+    <!-- Orbes atmosféricos estilo Apple Music -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div class="absolute -top-24 -left-20 w-80 h-80 bg-rose-400/20 rounded-full blur-[90px]"></div>
         <div class="absolute top-1/4 -right-24 w-96 h-96 bg-indigo-400/20 rounded-full blur-[100px]"></div>
         <div class="absolute -bottom-24 left-1/3 w-80 h-80 bg-sky-300/25 rounded-full blur-[90px]"></div>
+    </div>
+
+    <!-- NOTIFICACIÓN TOAST (Dynamic Island) -->
+    <div id="toast-capsule" class="fixed top-3 left-0 right-0 flex justify-center items-center pointer-events-none z-50 transition-all duration-300 transform -translate-y-24 opacity-0">
+        <div id="toast-body" class="glass-dock px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2.5 border border-white max-w-xs text-xs font-bold text-slate-800">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-500"></i>
+            <span id="toast-msg">Mensaje</span>
+        </div>
     </div>
 
     <!-- Indicador Cápsula Pull-To-Refresh -->
@@ -87,11 +106,14 @@
     <!-- Header Glass Superior -->
     <header class="sticky top-0 z-40 px-5 pt-12 pb-3.5 glass-nav">
         <div class="max-w-md mx-auto flex justify-between items-center">
-            <div>
-                <span class="text-[9px] font-black uppercase tracking-widest text-blue-600/90 block">Sistema en Vivo</span>
-                <h1 class="text-xl font-black tracking-tight text-slate-900 flex items-center gap-1.5">
-                    Bodega & Ropa
-                </h1>
+            <div class="flex items-center gap-2.5">
+                <canvas id="app-mini-icon" width="36" height="36" class="rounded-[10px] shadow-sm shadow-blue-500/20"></canvas>
+                <div>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-blue-600/90 block">Sistema en Vivo</span>
+                    <h1 class="text-lg font-black tracking-tight text-slate-900 leading-none">
+                        Bodega & Ropa
+                    </h1>
+                </div>
             </div>
             
             <div class="flex items-center gap-2">
@@ -109,7 +131,6 @@
         <!-- ================= TAB 1: CONSULTA / VENTA ================= -->
         <section id="tab-verificar" class="space-y-4">
             
-            <!-- Botón Grande de Escaneo -->
             <button onclick="abrirCamara('verificar')" class="w-full active:scale-[0.98] transition-all duration-200 glass-card p-4 rounded-3xl flex items-center justify-between group">
                 <div class="flex items-center gap-3.5">
                     <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/25">
@@ -248,7 +269,7 @@
 
     </main>
 
-    <!-- ================= MODAL DE EDICIÓN CON ELIMINACIÓN ================= -->
+    <!-- ================= MODAL DE EDICIÓN ================= -->
     <div id="modal-edicion" class="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-50 hidden flex flex-col justify-end transition-opacity duration-300">
         <div class="glass-modal rounded-t-[36px] p-6 max-w-md mx-auto w-full space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl">
             <div class="w-12 h-1.5 bg-slate-300/80 rounded-full mx-auto -mt-2 mb-2"></div>
@@ -263,7 +284,6 @@
                 </button>
             </div>
 
-            <!-- Reposición rápida de fardos -->
             <div class="space-y-1.5">
                 <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">SUMAR STOCK RÁPIDO</span>
                 <div class="grid grid-cols-4 gap-2">
@@ -299,7 +319,6 @@
                     Guardar Cambios en Sheets
                 </button>
 
-                <!-- Botón de eliminación en el modal -->
                 <button type="button" onclick="eliminarProductoDesdeModal()" class="w-full bg-red-50 active:scale-[0.98] text-red-600 border border-red-200/80 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 mt-2">
                     <i class="fa-solid fa-trash-can"></i> Eliminar Producto Permanentemente
                 </button>
@@ -307,7 +326,7 @@
         </div>
     </div>
 
-    <!-- ================= MODAL ESCÁNER ================= -->
+    <!-- ================= MODAL ESCÁNER CINEMATOGRÁFICO ================= -->
     <div id="modal-scanner" class="fixed inset-0 bg-black/95 backdrop-blur-2xl z-50 hidden flex flex-col justify-between p-6">
         <div class="flex justify-between items-center text-white pt-6 z-10">
             <div>
@@ -360,8 +379,86 @@
         </div>
     </nav>
 
-    <!-- Script de Lógica -->
+    <!-- Script: Generador de Ícono iOS y Lógica -->
     <script>
+        // ================= GENERADOR DE ÍCONO DE IPHONE EN HD =================
+        function generarIconoIOS() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 180;
+            canvas.height = 180;
+            const ctx = canvas.getContext('2d');
+
+            // 1. Fondo Degradado Estilo iOS 18 / Apple Music
+            const grad = ctx.createLinearGradient(0, 0, 180, 180);
+            grad.addColorStop(0, '#3b82f6'); // Azul vibrante
+            grad.addColorStop(0.5, '#6366f1'); // Índigo
+            grad.addColorStop(1, '#a855f7'); // Violeta profundo
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 180, 180);
+
+            // 2. Reflejo especular superior de cristal líquido
+            const gloss = ctx.createLinearGradient(0, 0, 0, 90);
+            gloss.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+            gloss.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gloss;
+            ctx.fillRect(0, 0, 180, 90);
+
+            // 3. Glifo Central Minimalista (Bolsa de tienda + Rayo láser)
+            ctx.strokeStyle = '#ffffff';
+            ctx.fillStyle = '#ffffff';
+            ctx.lineWidth = 9;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Asa de la bolsa
+            ctx.beginPath();
+            ctx.arc(90, 75, 22, Math.PI, 0, false);
+            ctx.stroke();
+
+            // Cuerpo de la bolsa
+            ctx.beginPath();
+            ctx.roundRect(45, 75, 90, 72, 16);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.fill();
+            ctx.stroke();
+
+            // Código de barras interior
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(63, 98); ctx.lineTo(63, 126);
+            ctx.moveTo(76, 98); ctx.lineTo(76, 126);
+            ctx.moveTo(86, 98); ctx.lineTo(86, 126);
+            ctx.moveTo(98, 98); ctx.lineTo(98, 126);
+            ctx.moveTo(111, 98); ctx.lineTo(111, 126);
+            ctx.stroke();
+
+            // Haz láser horizontal cian
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 5;
+            ctx.shadowColor = '#38bdf8';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.moveTo(35, 112);
+            ctx.lineTo(145, 112);
+            ctx.stroke();
+            ctx.shadowBlur = 0; // reset
+
+            const iconDataUrl = canvas.toDataURL('image/png');
+
+            // Asignar al apple-touch-icon y al favicon
+            document.getElementById('ios-touch-icon').href = iconDataUrl;
+            document.getElementById('ios-favicon').href = iconDataUrl;
+
+            // Dibujar también en el pequeño canvas del header
+            const miniCanvas = document.getElementById('app-mini-icon');
+            if (miniCanvas) {
+                const miniCtx = miniCanvas.getContext('2d');
+                miniCtx.drawImage(canvas, 0, 0, 36, 36);
+            }
+        }
+        generarIconoIOS();
+
+        // ================= LÓGICA DE SINCRONIZACIÓN Y APP =================
         const API_URL = "https://script.google.com/macros/s/AKfycbxxYR9UR6hvRh8TVK_cpLKVlGR68fRS95F5LmcffYf4f49DU9xZkcAxZzyx1nab71a7/exec";
 
         let inventario = JSON.parse(localStorage.getItem('bodega_sheets_cache')) || {};
@@ -369,6 +466,26 @@
         let productoSeleccionado = null;
         let destinoEscaneo = 'verificar';
         let flashlightOn = false;
+        let isProcessingScan = false;
+
+        let toastTimeout = null;
+        function mostrarToast(mensaje, icono = "fa-circle-check", color = "text-emerald-500") {
+            const toast = document.getElementById('toast-capsule');
+            const msgEl = document.getElementById('toast-msg');
+            const iconEl = document.getElementById('toast-icon');
+
+            msgEl.innerText = mensaje;
+            iconEl.className = `fa-solid ${icono} ${color}`;
+
+            toast.classList.remove('-translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-2', 'opacity-100');
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('-translate-y-24', 'opacity-0');
+                toast.classList.remove('translate-y-2', 'opacity-100');
+            }, 2500);
+        }
 
         function normalizarTexto(txt) {
             return String(txt || '')
@@ -378,7 +495,7 @@
                 .replace(/[\u0300-\u036f]/g, "");
         }
 
-        // Pull-to-refresh
+        // Pull to refresh
         let touchStartY = 0;
         let currentPull = 0;
         let isRefreshing = false;
@@ -478,7 +595,7 @@
             if (navigator.vibrate) navigator.vibrate(60);
         }
 
-        async function cargarInventarioDesdeSheets(mostrarAlerta = false) {
+        async function cargarInventarioDesdeSheets(manual = false) {
             const dot = document.getElementById('status-dot');
             dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
 
@@ -512,11 +629,11 @@
                 localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
                 actualizarBadge();
                 dot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400";
-                if (mostrarAlerta) alert("Inventario sincronizado con Google Sheets.");
+                if (manual) mostrarToast("Catálogo sincronizado con éxito");
                 renderizarInventario();
             } catch (e) {
                 dot.className = "w-2 h-2 rounded-full bg-red-400";
-                console.warn("Fallo de conexión:", e);
+                mostrarToast("Trabajando con datos locales", "fa-triangle-exclamation", "text-amber-500");
                 actualizarBadge();
             }
         }
@@ -536,10 +653,10 @@
             if (tab === 'inventario') renderizarInventario();
         }
 
-        // Cámara
         async function abrirCamara(destino) {
             destinoEscaneo = destino;
             flashlightOn = false;
+            isProcessingScan = false;
             document.getElementById('btn-torch').classList.remove('bg-amber-400', 'text-slate-900');
             document.getElementById('modal-scanner').classList.remove('hidden');
 
@@ -565,7 +682,7 @@
                 html5QrCode = new Html5Qrcode("scanner-view");
                 await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
             } catch (err) {
-                alert("Por favor concede permisos para usar la cámara.");
+                mostrarToast("Verifica permisos de cámara", "fa-triangle-exclamation", "text-rose-500");
                 cerrarCamara();
             }
         }
@@ -579,7 +696,7 @@
                 if (flashlightOn) btn.classList.add('bg-amber-400', 'text-slate-900');
                 else btn.classList.remove('bg-amber-400', 'text-slate-900');
             } catch (e) {
-                alert("Tu dispositivo o navegador no admite control de linterna web.");
+                mostrarToast("Flash no disponible", "fa-bolt-slash", "text-slate-400");
             }
         }
 
@@ -592,6 +709,9 @@
         }
 
         function onScanSuccess(codigo) {
+            if (isProcessingScan) return;
+            isProcessingScan = true;
+
             vibrarYSonar();
             cerrarCamara();
             const cod = String(codigo).trim();
@@ -606,11 +726,10 @@
             if (match) {
                 mostrarDetallesProducto(match.codigo);
             } else {
-                if (confirm(`El código "${cod}" no existe en inventario.\n\n¿Deseas registrarlo en Google Sheets?`)) {
-                    document.getElementById('nuevo-codigo').value = cod;
-                    cambiarTab('registro');
-                    setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
-                }
+                mostrarToast("Código nuevo detectado", "fa-barcode", "text-blue-500");
+                document.getElementById('nuevo-codigo').value = cod;
+                cambiarTab('registro');
+                setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
             }
         }
 
@@ -626,11 +745,10 @@
             if (match) {
                 mostrarDetallesProducto(match.codigo);
             } else {
-                if (confirm(`No se encontró "${rawVal}". ¿Deseas registrarlo ahora?`)) {
-                    document.getElementById('nuevo-codigo').value = rawVal;
-                    cambiarTab('registro');
-                    setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
-                }
+                mostrarToast("No encontrado, listo para registrar", "fa-plus", "text-blue-500");
+                document.getElementById('nuevo-codigo').value = rawVal;
+                cambiarTab('registro');
+                setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
             }
         }
 
@@ -666,7 +784,7 @@
                     body: JSON.stringify(payload)
                 });
             } catch (e) {
-                console.error("Error al enviar a Sheets:", e);
+                console.error("Error sincronizando:", e);
             }
         }
 
@@ -676,45 +794,38 @@
                     inventario[productoSeleccionado].stock -= 1;
                     localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
                     mostrarDetallesProducto(productoSeleccionado);
+                    mostrarToast("Venta registrada (-1)", "fa-cart-shopping", "text-emerald-500");
                     enviarSheets({ accion: "actualizarStock", codigo: productoSeleccionado, delta: -1 });
                 } else {
-                    alert("¡Sin unidades disponibles!");
+                    mostrarToast("¡Sin unidades disponibles!", "fa-triangle-exclamation", "text-rose-500");
                 }
             }
         }
 
-        // ================= OPERACIONES DE ELIMINACIÓN =================
         async function eliminarProducto(codigo) {
             const item = inventario[codigo];
             if (!item) return;
 
-            const confirmar = confirm(`¿Estás seguro de ELIMINAR permanentemente:\n\n"${item.nombre}" (${codigo})?\n\nEsta acción borrará la fila directamente en Google Sheets.`);
-            if (!confirmar) return;
+            if (!confirm(`¿Eliminar definitivamente "${item.nombre}"?`)) return;
 
-            // 1. Borrar de la memoria local
             delete inventario[codigo];
             localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
             actualizarBadge();
             renderizarInventario();
 
-            // 2. Si estaba viéndose en la pestaña de verificación, ocultarlo
             if (productoSeleccionado === codigo) {
                 document.getElementById('card-producto').classList.add('hidden');
                 document.getElementById('card-vacio').classList.remove('hidden');
                 productoSeleccionado = null;
             }
 
-            // 3. Cerrar modal de edición si estaba abierto
             cerrarModalEdicion();
+            mostrarToast("Producto eliminado", "fa-trash-can", "text-rose-500");
 
-            // 4. Enviar orden de borrado físico a Google Sheets
             await enviarSheets({
                 accion: "eliminarProducto",
                 codigo: codigo
             });
-
-            if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
-            alert(`"${item.nombre}" ha sido eliminado de tu inventario y de Google Sheets.`);
         }
 
         function eliminarProductoDesdeModal() {
@@ -722,7 +833,6 @@
             if (cod) eliminarProducto(cod);
         }
 
-        // ================= MODAL EDICIÓN =================
         function abrirModalEdicion(codigo) {
             const item = inventario[codigo];
             if (!item) return;
@@ -765,6 +875,8 @@
 
             if (productoSeleccionado === codigo) mostrarDetallesProducto(codigo);
 
+            mostrarToast("Cambios guardados", "fa-cloud-arrow-up", "text-blue-500");
+
             enviarSheets({
                 accion: "editarProducto",
                 codigo: codigo,
@@ -773,8 +885,6 @@
                 stock: nuevoStock,
                 foto: nuevaFoto
             });
-
-            alert("Producto actualizado en Google Sheets.");
         }
 
         async function guardarNuevoProducto(e) {
@@ -827,9 +937,9 @@
             document.getElementById('nuevo-stock').value = '';
             document.getElementById('nuevo-foto').value = '';
 
+            mostrarToast("Registrado en Sheets", "fa-circle-check", "text-emerald-500");
             mostrarDetallesProducto(codigo);
             cambiarTab('verificar');
-            alert(`¡"${nombre}" registrado con éxito en Sheets!`);
         }
 
         function renderizarInventario() {
@@ -861,12 +971,10 @@
                             <div class="flex items-center gap-1.5">
                                 <span class="text-xs font-black px-2.5 py-1 rounded-xl ${item.stock <= item.stockMin ? 'bg-red-500/15 text-red-600' : 'bg-slate-100 text-slate-700'}">${item.stock} un.</span>
                                 
-                                <!-- Botón Editar -->
                                 <button onclick="abrirModalEdicion('${cod}')" class="w-8 h-8 rounded-xl bg-white/80 active:scale-90 border border-white flex items-center justify-center text-slate-600 shadow-sm">
                                     <i class="fa-solid fa-pen text-xs"></i>
                                 </button>
 
-                                <!-- Botón Eliminar Rápido -->
                                 <button onclick="eliminarProducto('${cod}')" class="w-8 h-8 rounded-xl bg-red-50 active:scale-90 border border-red-100 flex items-center justify-center text-red-500 shadow-sm">
                                     <i class="fa-solid fa-trash-can text-xs"></i>
                                 </button>
