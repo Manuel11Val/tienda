@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bodega & Ropa</title>
+    <title>Bodega & Ropa - POS & Inventario</title>
 
     <!-- Meta Tags para iOS Web App nativa -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,35 +29,34 @@
         }
 
         .glass-nav {
-            background: rgba(255, 255, 255, 0.72);
+            background: rgba(255, 255, 255, 0.78);
             backdrop-filter: blur(28px) saturate(210%);
             -webkit-backdrop-filter: blur(28px) saturate(210%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.75);
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.78);
+            background: rgba(255, 255, 255, 0.82);
             backdrop-filter: blur(24px) saturate(190%);
             -webkit-backdrop-filter: blur(24px) saturate(190%);
-            border: 1px solid rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.9);
             box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.95), 0 12px 35px -8px rgba(15, 23, 42, 0.05);
         }
 
         .glass-dock {
-            background: rgba(255, 255, 255, 0.82);
+            background: rgba(255, 255, 255, 0.88);
             backdrop-filter: blur(32px) saturate(220%);
             -webkit-backdrop-filter: blur(32px) saturate(220%);
             box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.9);
         }
 
         .glass-modal {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(35px) saturate(200%);
             -webkit-backdrop-filter: blur(35px) saturate(200%);
-            border-top: 1px solid rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.95);
         }
 
-        /* Curva de movimiento elástica natural de iOS */
         .dock-pill-spring {
             transition: transform 0.32s cubic-bezier(0.25, 1, 0.35, 1);
         }
@@ -86,186 +85,291 @@
 
     <!-- Orbes atmosféricos estilo Apple Music -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div class="absolute -top-24 -left-20 w-80 h-80 bg-rose-400/20 rounded-full blur-[90px]"></div>
-        <div class="absolute top-1/4 -right-24 w-96 h-96 bg-indigo-400/20 rounded-full blur-[100px]"></div>
-        <div class="absolute -bottom-24 left-1/3 w-80 h-80 bg-sky-300/25 rounded-full blur-[90px]"></div>
+        <div class="absolute -top-24 -left-20 w-80 h-80 lg:w-[32rem] lg:h-[32rem] bg-rose-400/20 rounded-full blur-[90px] lg:blur-[140px]"></div>
+        <div class="absolute top-1/4 -right-24 w-96 h-96 lg:w-[36rem] lg:h-[36rem] bg-indigo-400/20 rounded-full blur-[100px] lg:blur-[150px]"></div>
+        <div class="absolute -bottom-24 left-1/3 w-80 h-80 lg:w-[30rem] lg:h-[30rem] bg-sky-300/25 rounded-full blur-[90px] lg:blur-[130px]"></div>
     </div>
 
     <!-- NOTIFICACIÓN TOAST (Dynamic Island) -->
-    <div id="toast-capsule" class="fixed top-3 left-0 right-0 flex justify-center items-center pointer-events-none z-50 transition-all duration-300 transform -translate-y-24 opacity-0">
-        <div id="toast-body" class="glass-dock px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2.5 border border-white max-w-xs text-xs font-bold text-slate-800">
-            <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-500"></i>
+    <div id="toast-capsule" class="fixed top-4 left-0 right-0 flex justify-center items-center pointer-events-none z-50 transition-all duration-300 transform -translate-y-24 opacity-0">
+        <div id="toast-body" class="glass-dock px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-white max-w-sm text-xs font-bold text-slate-800">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-500 text-sm"></i>
             <span id="toast-msg">Mensaje</span>
         </div>
     </div>
 
-    <!-- Indicador Cápsula Pull-To-Refresh -->
-    <div id="ptr-capsule" class="fixed top-0 left-0 right-0 flex justify-center items-center pointer-events-none z-50 transition-all duration-300 ease-out" style="transform: translateY(-65px);">
-        <div class="glass-dock px-4 py-2 rounded-full shadow-lg flex items-center gap-2.5 border border-white/80">
-            <i id="ptr-spinner" class="fa-solid fa-arrows-rotate text-blue-600 text-xs transition-transform duration-200"></i>
-            <span id="ptr-text" class="text-[11px] font-bold text-slate-700 tracking-tight">Desliza para actualizar</span>
+    <!-- Indicador Cápsula Pull-To-Refresh (Centrado y claramente visible bajo el header) -->
+    <div id="ptr-capsule" class="fixed top-20 left-0 right-0 flex justify-center items-center pointer-events-none z-50 transition-all duration-300 ease-out opacity-0" style="transform: translateY(-80px);">
+        <div class="glass-dock px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-3 border border-white/90 bg-white/90">
+            <i id="ptr-spinner" class="fa-solid fa-arrows-rotate text-blue-600 text-sm transition-transform duration-200"></i>
+            <span id="ptr-text" class="text-xs font-black text-slate-800 tracking-tight">Desliza para actualizar</span>
         </div>
     </div>
 
-    <!-- Header Glass Superior -->
-    <header class="sticky top-0 z-40 px-5 pt-12 pb-3.5 glass-nav">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-2.5">
-                <canvas id="app-mini-icon" width="36" height="36" class="rounded-[10px] shadow-sm shadow-blue-500/20"></canvas>
+    <!-- Header Glass Superior Responsive -->
+    <header class="sticky top-0 z-40 px-5 pt-8 lg:pt-5 pb-3.5 glass-nav">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <canvas id="app-mini-icon" width="40" height="40" class="rounded-xl shadow-md shadow-blue-500/20"></canvas>
                 <div>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-blue-600/90 block">Sistema en Vivo</span>
-                    <h1 class="text-lg font-black tracking-tight text-slate-900 leading-none">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-blue-600 bg-blue-100/70 px-2 py-0.5 rounded-md">En vivo</span>
+                        <span class="hidden sm:inline text-xs font-semibold text-slate-400">• Google Sheets</span>
+                    </div>
+                    <h1 class="text-lg lg:text-xl font-black tracking-tight text-slate-900 leading-snug">
                         Bodega & Ropa
                     </h1>
                 </div>
             </div>
-            
-            <div class="flex items-center gap-2">
-                <button onclick="cargarInventarioDesdeSheets(true)" class="active:scale-95 transition-transform bg-white/75 border border-white/90 shadow-sm px-3.5 py-1.5 rounded-full flex items-center gap-2">
-                    <span id="status-dot" class="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400"></span>
+
+            <!-- Navegación de Escritorio en Header (Visible solo en computadoras) -->
+            <div class="hidden md:flex items-center gap-2 bg-slate-200/60 p-1.5 rounded-2xl border border-white/60">
+                <button onclick="cambiarTab('verificar')" id="btn-desktop-verificar" class="px-4 py-2 rounded-xl text-xs font-black transition-all bg-white shadow-sm text-blue-600 flex items-center gap-2">
+                    <i class="fa-solid fa-barcode"></i> Consulta & Venta
+                </button>
+                <button onclick="cambiarTab('inventario')" id="btn-desktop-inventario" class="px-4 py-2 rounded-xl text-xs font-black transition-all text-slate-600 hover:text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked"></i> Catálogo Completo
+                </button>
+                <button onclick="cambiarTab('registro')" id="btn-desktop-registro" class="px-4 py-2 rounded-xl text-xs font-black transition-all text-slate-600 hover:text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Registrar Producto
+                </button>
+            </div>
+
+            <!-- Controles y Sincronizador -->
+            <div class="flex items-center gap-2.5">
+                <button onclick="cargarInventarioDesdeSheets(true)" title="Sincronizar ahora" class="active:scale-95 transition-transform bg-white/80 hover:bg-white border border-white/90 shadow-sm px-3.5 py-1.5 rounded-full flex items-center gap-2 cursor-pointer">
+                    <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400"></span>
                     <span id="badge-total" class="text-xs font-black text-slate-800">0 prod.</span>
+                    <i class="fa-solid fa-rotate text-[11px] text-slate-400 ml-0.5"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Contenido Dinámico -->
-    <main id="main-content" class="relative z-10 max-w-md mx-auto w-full p-4 flex-1 pb-32 space-y-4">
+    <!-- Contenido Dinámico Adaptable (Móvil centrado / Escritorio extendido) -->
+    <main id="main-content" class="relative z-10 max-w-6xl mx-auto w-full p-4 lg:p-6 flex-1 pb-32 lg:pb-12">
 
         <!-- ================= TAB 1: CONSULTA / VENTA ================= -->
         <section id="tab-verificar" class="space-y-4">
             
-            <button onclick="abrirCamara('verificar')" class="w-full active:scale-[0.98] transition-all duration-200 glass-card p-4 rounded-3xl flex items-center justify-between group">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/25">
-                        <i class="fa-solid fa-camera text-lg"></i>
-                    </div>
-                    <div class="text-left">
-                        <h2 class="text-sm font-black text-slate-900">Escanear Código</h2>
-                        <p class="text-[11px] text-slate-500 font-medium">Lector ultra rápido de barras o QR</p>
-                    </div>
-                </div>
-                <div class="w-8 h-8 rounded-full bg-slate-100/80 border border-white flex items-center justify-center text-slate-400 text-xs shadow-inner">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </div>
-            </button>
-
-            <!-- Buscador Manual -->
-            <div class="glass-card p-2 rounded-2xl flex gap-2 items-center">
-                <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs ml-3"></i>
-                <input type="text" id="input-buscar-codigo" placeholder="Escribir código o nombre..." class="w-full py-2 bg-transparent text-sm focus:outline-none font-semibold text-slate-800 placeholder-slate-400" onkeydown="if(event.key==='Enter') buscarPorCodigoManual()">
-                <button onclick="buscarPorCodigoManual()" class="bg-slate-900 active:scale-95 transition-transform text-white px-4 py-2 rounded-xl text-xs font-black shadow-sm">
-                    Buscar
-                </button>
-            </div>
-
-            <!-- Ficha del Producto Encontrado -->
-            <div id="card-producto" class="hidden glass-card p-5 rounded-3xl space-y-4">
-                <div class="flex gap-4 items-center">
-                    <img id="card-img" src="" class="w-20 h-20 rounded-2xl object-cover bg-slate-100/70 border border-white/90 shadow-md hidden" onerror="this.classList.add('hidden')">
-                    <div class="flex-1 min-w-0">
-                        <span id="card-categoria" class="text-[9px] font-black uppercase tracking-wider text-blue-700 bg-blue-100/70 border border-blue-200/50 px-2.5 py-0.5 rounded-md inline-block"></span>
-                        <h3 id="card-nombre" class="text-lg font-black text-slate-900 leading-snug mt-1"></h3>
-                        <span id="card-codigo" class="text-[11px] font-mono text-slate-400 font-medium block mt-0.5"></span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-emerald-500/10 border border-emerald-500/20 p-3.5 rounded-2xl text-center">
-                        <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-700 block">Precio Venta</span>
-                        <span id="card-precio" class="text-2xl font-black text-emerald-700"></span>
-                    </div>
-                    <div class="bg-amber-500/10 border border-amber-500/20 p-3.5 rounded-2xl text-center">
-                        <span class="text-[10px] uppercase font-bold tracking-wider text-amber-700 block">Stock Actual</span>
-                        <span id="card-stock" class="text-2xl font-black text-amber-700"></span>
-                    </div>
-                </div>
-
-                <div class="flex gap-2 pt-1">
-                    <button onclick="venderUnidad()" class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 active:scale-95 transition-all text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-cart-shopping"></i> Vender (-1)
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                
+                <!-- Columna Izquierda en PC: Buscador, Escáner e Ingreso Rápido -->
+                <div class="lg:col-span-5 space-y-4">
+                    <button onclick="abrirCamara('verificar')" class="w-full active:scale-[0.98] transition-all duration-200 glass-card p-4 rounded-3xl flex items-center justify-between group cursor-pointer hover:shadow-lg">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/25">
+                                <i class="fa-solid fa-camera text-lg"></i>
+                            </div>
+                            <div class="text-left">
+                                <h2 class="text-sm font-black text-slate-900">Escanear Código de Barras</h2>
+                                <p class="text-[11px] text-slate-500 font-medium">Lector ultra rápido de empaques o etiquetas</p>
+                            </div>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-slate-100/80 border border-white flex items-center justify-center text-slate-400 text-xs shadow-inner">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
                     </button>
-                    <button onclick="abrirModalEdicion(productoSeleccionado)" class="bg-white/80 active:scale-95 transition-all text-slate-700 border border-white px-4 py-3.5 rounded-2xl font-bold text-sm shadow-sm">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                    </button>
-                </div>
-            </div>
 
-            <!-- Estado Vacío -->
-            <div id="card-vacio" class="text-center py-16 px-6">
-                <div class="w-16 h-16 glass-card rounded-3xl flex items-center justify-center mx-auto mb-3 text-slate-400 text-2xl shadow-sm border border-white">
-                    <i class="fa-solid fa-barcode"></i>
+                    <!-- Buscador Manual -->
+                    <div class="glass-card p-2 rounded-2xl flex gap-2 items-center">
+                        <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs ml-3"></i>
+                        <input type="text" id="input-buscar-codigo" placeholder="Escribir código o nombre (ej: 775..., Coca, Polo)..." class="w-full py-2.5 bg-transparent text-sm focus:outline-none font-semibold text-slate-800 placeholder-slate-400" onkeydown="if(event.key==='Enter') buscarPorCodigoManual()">
+                        <button onclick="buscarPorCodigoManual()" class="bg-slate-900 hover:bg-slate-800 active:scale-95 transition-transform text-white px-5 py-2.5 rounded-xl text-xs font-black shadow-sm cursor-pointer">
+                            Buscar
+                        </button>
+                    </div>
+
+                    <!-- Métricas resumidas en Escritorio -->
+                    <div class="hidden lg:grid grid-cols-2 gap-3 pt-2">
+                        <div class="glass-card p-4 rounded-2xl">
+                            <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Total en Catálogo</span>
+                            <div id="metric-total" class="text-2xl font-black text-slate-900 mt-1">0</div>
+                        </div>
+                        <div class="glass-card p-4 rounded-2xl">
+                            <span class="text-[10px] font-black uppercase text-rose-500 tracking-wider">Por Agotarse (&le; 2 un.)</span>
+                            <div id="metric-bajos" class="text-2xl font-black text-rose-600 mt-1">0</div>
+                        </div>
+                    </div>
                 </div>
-                <h4 class="font-extrabold text-slate-800 text-sm">Escáner listo</h4>
-                <p class="text-xs text-slate-400 mt-1 max-w-[220px] mx-auto font-medium">Apunta con la cámara al código o desliza hacia abajo para refrescar inventario.</p>
+
+                <!-- Columna Derecha en PC: Ficha del Producto Encontrado / Estado Vacío -->
+                <div class="lg:col-span-7">
+                    <!-- Ficha del Producto Encontrado -->
+                    <div id="card-producto" class="hidden glass-card p-6 rounded-3xl space-y-5 border border-white shadow-xl">
+                        <div class="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
+                            <img id="card-img" src="" class="w-28 h-28 lg:w-36 lg:h-36 rounded-2xl object-cover bg-slate-100 border border-white/90 shadow-md hidden" onerror="this.classList.add('hidden')">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span id="card-categoria" class="text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-100/70 border border-blue-200/50 px-3 py-1 rounded-lg inline-block"></span>
+                                    <span id="card-alerta-stock" class="hidden text-[10px] font-black uppercase tracking-wider text-rose-700 bg-rose-100 border border-rose-200 px-3 py-1 rounded-lg">Poco Stock</span>
+                                </div>
+                                <h3 id="card-nombre" class="text-xl lg:text-2xl font-black text-slate-900 leading-snug mt-2"></h3>
+                                <span id="card-codigo" class="text-xs font-mono text-slate-400 font-bold block mt-1"></span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl text-center">
+                                <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-700 block">Precio Venta</span>
+                                <span id="card-precio" class="text-3xl font-black text-emerald-700"></span>
+                            </div>
+                            <div class="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl text-center">
+                                <span class="text-[10px] uppercase font-bold tracking-wider text-amber-700 block">Stock en Tienda</span>
+                                <span id="card-stock" class="text-3xl font-black text-amber-700"></span>
+                            </div>
+                            <div class="col-span-2 sm:col-span-1 bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl text-center flex flex-col justify-center">
+                                <span class="text-[10px] uppercase font-bold tracking-wider text-blue-700 block">Costo / Margen</span>
+                                <span id="card-costo" class="text-lg font-black text-blue-800">S/ 0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                            <button onclick="venderUnidad()" class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 active:scale-95 transition-all text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-cart-shopping text-base"></i> Registrar Venta (-1)
+                            </button>
+                            <button onclick="sumarStockDirecto(1)" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-4 rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-plus"></i> Sumar (+1)
+                            </button>
+                            <button onclick="abrirModalEdicion(productoSeleccionado)" class="bg-white/90 active:scale-95 transition-all text-slate-700 hover:text-slate-900 border border-white px-5 py-4 rounded-2xl font-black text-sm shadow-sm cursor-pointer flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Estado Vacío -->
+                    <div id="card-vacio" class="text-center py-20 px-6 glass-card rounded-3xl border border-white">
+                        <div class="w-20 h-20 bg-slate-100/90 rounded-3xl flex items-center justify-center mx-auto mb-4 text-slate-400 text-3xl shadow-inner border border-white">
+                            <i class="fa-solid fa-barcode"></i>
+                        </div>
+                        <h4 class="font-black text-slate-800 text-base">Terminal de Consulta & Venta Listo</h4>
+                        <p class="text-xs text-slate-400 mt-1.5 max-w-sm mx-auto font-medium">Apunta con la cámara al código de barras o escribe el nombre o código para consultar precios y existencia.</p>
+                    </div>
+                </div>
+
             </div>
         </section>
 
-        <!-- ================= TAB 2: INVENTARIO ================= -->
-        <section id="tab-inventario" class="space-y-3 hidden">
-            <div class="glass-card p-2 rounded-2xl flex items-center gap-2">
-                <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs ml-3"></i>
-                <input type="text" id="filtro-buscar" onkeyup="renderizarInventario()" placeholder="Filtrar catálogo completo..." class="w-full py-1.5 bg-transparent text-sm focus:outline-none font-semibold text-slate-800 placeholder-slate-400">
+        <!-- ================= TAB 2: INVENTARIO (TABLA COMPLETA EN PC) ================= -->
+        <section id="tab-inventario" class="space-y-4 hidden">
+            <div class="glass-card p-3 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="flex items-center gap-2 w-full sm:w-80">
+                    <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs ml-3"></i>
+                    <input type="text" id="filtro-buscar" onkeyup="renderizarInventario()" placeholder="Filtrar por código o nombre..." class="w-full py-2 bg-transparent text-sm focus:outline-none font-semibold text-slate-800 placeholder-slate-400">
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <select id="filtro-categoria" onchange="renderizarInventario()" class="bg-white/80 border border-slate-200/80 rounded-xl px-3 py-2 text-xs font-black text-slate-700 focus:outline-none">
+                        <option value="TODOS">Todas las Categorías</option>
+                        <option value="Bodega">Solo Bodega</option>
+                        <option value="Ropa">Solo Ropa</option>
+                    </select>
+                </div>
             </div>
 
-            <div id="lista-inventario" class="space-y-2.5"></div>
+            <!-- Vista Móvil (Tarjetas Liquid) -->
+            <div id="lista-inventario-mobile" class="space-y-2.5 lg:hidden"></div>
+
+            <!-- Vista Escritorio (Tabla Pro con Columnas y Fotos) -->
+            <div class="hidden lg:block glass-card rounded-3xl overflow-hidden border border-white shadow-md">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100/70 border-b border-slate-200/60 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                            <th class="p-4">Foto</th>
+                            <th class="p-4">Código</th>
+                            <th class="p-4">Categoría</th>
+                            <th class="p-4">Producto</th>
+                            <th class="p-4">Costo</th>
+                            <th class="p-4">Precio Venta</th>
+                            <th class="p-4">Stock</th>
+                            <th class="p-4 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-inventario-desktop" class="divide-y divide-slate-100 text-sm"></tbody>
+                </table>
+            </div>
         </section>
 
-        <!-- ================= TAB 3: REGISTRO A LA NUBE ================= -->
+        <!-- ================= TAB 3: REGISTRO A LA NUBE CON CÁMARA ================= -->
         <section id="tab-registro" class="space-y-4 hidden">
-            <div class="glass-card p-5 rounded-3xl space-y-4">
-                <div class="flex justify-between items-center border-b border-slate-200/50 pb-3">
-                    <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
-                        <i class="fa-solid fa-cloud-arrow-up text-blue-600"></i> Registrar Mercadería
-                    </h3>
-                    <button onclick="abrirCamara('registro')" class="text-xs font-bold text-blue-600 bg-blue-50/80 px-3 py-1.5 rounded-xl border border-blue-200/60 active:scale-95">
-                        <i class="fa-solid fa-camera mr-1"></i> Escanear
+            <div class="glass-card p-6 lg:p-8 rounded-3xl space-y-6 max-w-2xl mx-auto shadow-xl border border-white">
+                <div class="flex justify-between items-center border-b border-slate-200/50 pb-4">
+                    <div>
+                        <span class="text-[10px] font-black uppercase text-blue-600 tracking-wider">Alta de Mercancía</span>
+                        <h3 class="font-black text-slate-900 text-lg flex items-center gap-2 mt-0.5">
+                            <i class="fa-solid fa-cloud-arrow-up text-blue-600"></i> Registrar en Google Sheets
+                        </h3>
+                    </div>
+                    <button onclick="abrirCamara('registro')" class="text-xs font-black text-blue-600 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-xl border border-blue-200 active:scale-95 transition-all cursor-pointer">
+                        <i class="fa-solid fa-camera mr-1.5"></i> Escanear Código
                     </button>
                 </div>
 
-                <form onsubmit="guardarNuevoProducto(event)" class="space-y-3">
+                <form onsubmit="guardarNuevoProducto(event)" class="space-y-4">
                     <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">CÓDIGO DE BARRAS</label>
-                        <input type="text" id="nuevo-codigo" required placeholder="Ej: 775012345678" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">CÓDIGO DE BARRAS / EAN</label>
+                        <input type="text" id="nuevo-codigo" required placeholder="Ej: 775012345678 o ROP-POL-001" class="w-full p-3.5 bg-white/80 border border-slate-200/80 rounded-2xl text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">CATEGORÍA</label>
-                            <select id="nuevo-categoria" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                                <option value="Bodega">Bodega</option>
-                                <option value="Ropa">Ropa</option>
+                            <select id="nuevo-categoria" class="w-full p-3.5 bg-white/80 border border-slate-200/80 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <option value="Bodega">Bodega (Abarrotes)</option>
+                                <option value="Ropa">Ropa (Prenda)</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">PRECIO VENTA (S/)</label>
-                            <input type="number" step="0.10" id="nuevo-precio" required placeholder="0.00" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-black text-emerald-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <input type="number" step="0.10" id="nuevo-precio" required placeholder="0.00" class="w-full p-3.5 bg-white/80 border border-slate-200/80 rounded-2xl text-sm font-black text-emerald-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">NOMBRE DEL PRODUCTO / PRENDA</label>
-                        <input type="text" id="nuevo-nombre" required placeholder="Ej: Coca-Cola 500ml / Polo Oversize M" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <input type="text" id="nuevo-nombre" required placeholder="Ej: Coca-Cola 500ml / Polo Oversize Algodón M" class="w-full p-3.5 bg-white/80 border border-slate-200/80 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">STOCK INICIAL</label>
-                            <input type="number" id="nuevo-stock" required placeholder="0" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-black focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <input type="number" id="nuevo-stock" required placeholder="0" class="w-full p-3.5 bg-white/80 border border-slate-200/80 rounded-2xl text-sm font-black focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">COSTO (S/)</label>
-                            <input type="number" step="0.10" id="nuevo-costo" placeholder="0.00" class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">PRECIO COSTO (S/)</label>
+                            <input type="number" step="0.10" id="nuevo-costo" placeholder="0.00" class="w-full p-3.5 bg-white/80 border border-slate-200/80 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">IMAGEN URL (Drive o Web)</label>
-                        <input type="url" id="nuevo-foto" placeholder="https://..." class="w-full p-3 bg-white/70 border border-slate-200/70 rounded-2xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <!-- SECCIÓN DE FOTO CON CÁMARA DEL MÓVIL DIRECTA -->
+                    <div class="bg-blue-50/50 border border-blue-200/60 p-4 rounded-2xl space-y-3">
+                        <label class="block text-[10px] font-black text-blue-900 uppercase tracking-wider">
+                            <i class="fa-solid fa-camera mr-1"></i> FOTO DEL PRODUCTO (Cámara del móvil o Web)
+                        </label>
+                        
+                        <div class="flex items-center gap-3">
+                            <!-- Input para tomar foto con la cámara del celular -->
+                            <label class="flex-1 bg-white hover:bg-slate-50 border border-blue-300/80 active:scale-95 transition-all text-blue-700 py-3 px-4 rounded-xl font-black text-xs flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                                <i class="fa-solid fa-camera text-sm"></i>
+                                <span id="label-tomar-foto">Tomar Foto con Cámara</span>
+                                <input type="file" id="input-foto-camara" accept="image/*" capture="environment" onchange="capturarYProcesarFoto(event)" class="hidden">
+                            </label>
+
+                            <div id="preview-foto-container" class="hidden relative">
+                                <img id="preview-foto-img" src="" class="w-14 h-14 object-cover rounded-xl border border-white shadow-md">
+                                <button type="button" onclick="quitarFotoCapturada()" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 text-white rounded-full flex items-center justify-center text-[10px] shadow cursor-pointer">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- O pegar enlace directamente -->
+                        <div>
+                            <input type="url" id="nuevo-foto" placeholder="O pegar enlace URL de Google Drive / Web..." class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
                     </div>
 
-                    <button type="submit" id="btn-guardar-nuevo" class="w-full bg-slate-900 active:scale-[0.98] transition-transform text-white py-3.5 rounded-2xl font-bold text-sm shadow-md mt-2 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Google Sheets
+                    <button type="submit" id="btn-guardar-nuevo" class="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-transform text-white py-4 rounded-2xl font-black text-sm shadow-xl mt-2 flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Guardar Producto en Sheets
                     </button>
                 </form>
             </div>
@@ -274,27 +378,27 @@
     </main>
 
     <!-- ================= MODAL DE EDICIÓN ================= -->
-    <div id="modal-edicion" class="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-50 hidden flex flex-col justify-end transition-opacity duration-300">
-        <div class="glass-modal rounded-t-[36px] p-6 max-w-md mx-auto w-full space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl">
-            <div class="w-12 h-1.5 bg-slate-300/80 rounded-full mx-auto -mt-2 mb-2"></div>
+    <div id="modal-edicion" class="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-50 hidden flex flex-col justify-end lg:justify-center p-0 lg:p-6 transition-opacity duration-300">
+        <div class="glass-modal rounded-t-[36px] lg:rounded-[32px] p-6 max-w-lg mx-auto w-full space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-white">
+            <div class="w-12 h-1.5 bg-slate-300/80 rounded-full mx-auto -mt-2 mb-2 lg:hidden"></div>
             
             <div class="flex justify-between items-center border-b border-slate-200/60 pb-3">
                 <div>
                     <span class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Edición de Catálogo</span>
                     <h3 id="edit-titulo" class="font-black text-slate-900 text-lg">Modificar Producto</h3>
                 </div>
-                <button onclick="cerrarModalEdicion()" class="w-8 h-8 rounded-full bg-slate-200/70 flex items-center justify-center text-slate-600 text-sm active:scale-90">
+                <button onclick="cerrarModalEdicion()" class="w-8 h-8 rounded-full bg-slate-200/70 hover:bg-slate-200 flex items-center justify-center text-slate-600 text-sm active:scale-90 cursor-pointer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
             <div class="space-y-1.5">
-                <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">SUMAR STOCK RÁPIDO</span>
+                <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">SUMAR STOCK RÁPIDO (FARDOS)</span>
                 <div class="grid grid-cols-4 gap-2">
-                    <button onclick="ajustarStockDesdeEdicion(1)" class="bg-white/80 border border-slate-200/80 py-2.5 rounded-xl text-xs font-black active:scale-95 shadow-sm">+1</button>
-                    <button onclick="ajustarStockDesdeEdicion(6)" class="bg-white/80 border border-slate-200/80 py-2.5 rounded-xl text-xs font-black active:scale-95 shadow-sm">+6</button>
-                    <button onclick="ajustarStockDesdeEdicion(12)" class="bg-white/80 border border-slate-200/80 py-2.5 rounded-xl text-xs font-black active:scale-95 shadow-sm">+12</button>
-                    <button onclick="ajustarStockDesdeEdicion(24)" class="bg-white/80 border border-slate-200/80 py-2.5 rounded-xl text-xs font-black active:scale-95 shadow-sm">+24</button>
+                    <button onclick="ajustarStockDesdeEdicion(1)" class="bg-white/80 border border-slate-200 py-2.5 rounded-xl text-xs font-black active:scale-95 shadow-sm cursor-pointer">+1</button>
+                    <button onclick="ajustarStockDesdeEdicion(6)" class="bg-white/80 border border-slate-200 py-2.5 rounded-xl text-xs font-black active:scale-95 shadow-sm cursor-pointer">+6</button>
+                    <button onclick="ajustarStockDesdeEdicion(12)" class="bg-white/80 border border-slate-200 py-2.5 rounded-xl text-xs font-black active:scale-95 shadow-sm cursor-pointer">+12</button>
+                    <button onclick="ajustarStockDesdeEdicion(24)" class="bg-white/80 border border-slate-200 py-2.5 rounded-xl text-xs font-black active:scale-95 shadow-sm cursor-pointer">+24</button>
                 </div>
             </div>
 
@@ -315,15 +419,15 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">IMAGEN URL</label>
-                    <input type="text" id="edit-foto" placeholder="URL de Google Drive o web" class="w-full p-3 bg-white/70 border border-slate-200/80 rounded-2xl text-xs focus:outline-none">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">FOTO / IMAGEN (URL o Google Drive)</label>
+                    <input type="text" id="edit-foto" placeholder="https://..." class="w-full p-3 bg-white/70 border border-slate-200/80 rounded-2xl text-xs focus:outline-none">
                 </div>
 
-                <button type="submit" class="w-full bg-blue-600 active:scale-[0.98] text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-blue-500/25">
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-blue-500/25 cursor-pointer">
                     Guardar Cambios en Sheets
                 </button>
 
-                <button type="button" onclick="eliminarProductoDesdeModal()" class="w-full bg-red-50 active:scale-[0.98] text-red-600 border border-red-200/80 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 mt-2">
+                <button type="button" onclick="eliminarProductoDesdeModal()" class="w-full bg-red-50 hover:bg-red-100 active:scale-[0.98] text-red-600 border border-red-200/80 py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 mt-2 cursor-pointer">
                     <i class="fa-solid fa-trash-can"></i> Eliminar Producto Permanentemente
                 </button>
             </form>
@@ -332,17 +436,17 @@
 
     <!-- ================= MODAL ESCÁNER CINEMATOGRÁFICO ================= -->
     <div id="modal-scanner" class="fixed inset-0 bg-black/95 backdrop-blur-2xl z-50 hidden flex flex-col justify-between p-6">
-        <div class="flex justify-between items-center text-white pt-6 z-10">
+        <div class="flex justify-between items-center text-white pt-6 z-10 max-w-md mx-auto w-full">
             <div>
                 <span class="text-[10px] font-black tracking-widest uppercase text-blue-400">Escáner Óptico</span>
                 <h3 class="font-black text-lg text-white">Centra el código</h3>
             </div>
             
             <div class="flex items-center gap-2">
-                <button id="btn-torch" onclick="toggleFlashlight()" class="w-10 h-10 bg-white/15 active:bg-white/30 rounded-full flex items-center justify-center text-white text-sm border border-white/20 transition-all">
+                <button id="btn-torch" onclick="toggleFlashlight()" class="w-10 h-10 bg-white/15 active:bg-white/30 rounded-full flex items-center justify-center text-white text-sm border border-white/20 transition-all cursor-pointer">
                     <i id="torch-icon" class="fa-solid fa-bolt"></i>
                 </button>
-                <button onclick="cerrarCamara()" class="w-10 h-10 bg-white/15 active:bg-white/30 rounded-full flex items-center justify-center text-white text-base border border-white/20 transition-all">
+                <button onclick="cerrarCamara()" class="w-10 h-10 bg-white/15 active:bg-white/30 rounded-full flex items-center justify-center text-white text-base border border-white/20 transition-all cursor-pointer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -368,25 +472,21 @@
         </div>
     </div>
 
-    <!-- ================= DOCK FLOTANTE CON CÁPSULA DESLIZANTE NATIVA ================= -->
-    <nav class="fixed bottom-4 left-4 right-4 max-w-md mx-auto z-40">
+    <!-- ================= DOCK FLOTANTE (Solo en teléfonos móviles) ================= -->
+    <nav class="md:hidden fixed bottom-4 left-4 right-4 max-w-md mx-auto z-40">
         <div class="glass-dock rounded-[28px] p-1.5 flex items-center relative border border-white/80 shadow-2xl">
-            <!-- Píldora deslizante de cristal con amortiguación iOS -->
             <div id="dock-pill" class="absolute top-1.5 bottom-1.5 rounded-[22px] bg-white/95 shadow-md border border-white dock-pill-spring pointer-events-none" style="width: calc((100% - 12px) / 3); left: 6px; transform: translateX(0%);"></div>
 
-            <!-- Botón 1: Consultar -->
             <button onclick="cambiarTab('verificar')" id="btn-tab-verificar" class="flex-1 relative z-10 py-2.5 flex flex-col items-center justify-center gap-0.5 text-blue-600 transition-colors duration-200">
                 <i class="fa-solid fa-barcode text-base transition-transform duration-200 scale-105"></i>
                 <span class="text-[10px] font-bold tracking-tight">Consultar</span>
             </button>
 
-            <!-- Botón 2: Inventario -->
             <button onclick="cambiarTab('inventario')" id="btn-tab-inventario" class="flex-1 relative z-10 py-2.5 flex flex-col items-center justify-center gap-0.5 text-slate-400 transition-colors duration-200">
                 <i class="fa-solid fa-boxes-stacked text-base transition-transform duration-200"></i>
                 <span class="text-[10px] font-bold tracking-tight">Inventario</span>
             </button>
 
-            <!-- Botón 3: Añadir -->
             <button onclick="cambiarTab('registro')" id="btn-tab-registro" class="flex-1 relative z-10 py-2.5 flex flex-col items-center justify-center gap-0.5 text-slate-400 transition-colors duration-200">
                 <i class="fa-solid fa-circle-plus text-base transition-transform duration-200"></i>
                 <span class="text-[10px] font-bold tracking-tight">Añadir</span>
@@ -394,7 +494,6 @@
         </div>
     </nav>
 
-    <!-- Script de Lógica -->
     <script>
         // ================= GENERADOR DE ÍCONO DE IPHONE EN HD =================
         function generarIconoIOS() {
@@ -458,12 +557,12 @@
             const miniCanvas = document.getElementById('app-mini-icon');
             if (miniCanvas) {
                 const miniCtx = miniCanvas.getContext('2d');
-                miniCtx.drawImage(canvas, 0, 0, 36, 36);
+                miniCtx.drawImage(canvas, 0, 0, 40, 40);
             }
         }
         generarIconoIOS();
 
-        // ================= LÓGICA DE SINCRONIZACIÓN Y APP =================
+        // ================= CONFIGURACIÓN Y ESTADO =================
         const API_URL = "https://script.google.com/macros/s/AKfycbxxYR9UR6hvRh8TVK_cpLKVlGR68fRS95F5LmcffYf4f49DU9xZkcAxZzyx1nab71a7/exec";
 
         let inventario = JSON.parse(localStorage.getItem('bodega_sheets_cache')) || {};
@@ -472,6 +571,7 @@
         let destinoEscaneo = 'verificar';
         let flashlightOn = false;
         let isProcessingScan = false;
+        let fotoCapturadaBase64 = null; // Almacena la foto tomada con la cámara
 
         let toastTimeout = null;
         function mostrarToast(mensaje, icono = "fa-circle-check", color = "text-emerald-500") {
@@ -489,7 +589,7 @@
             toastTimeout = setTimeout(() => {
                 toast.classList.add('-translate-y-24', 'opacity-0');
                 toast.classList.remove('translate-y-2', 'opacity-100');
-            }, 2500);
+            }, 2600);
         }
 
         function normalizarTexto(txt) {
@@ -500,7 +600,7 @@
                 .replace(/[\u0300-\u036f]/g, "");
         }
 
-        // Pull to refresh
+        // ================= PULL TO REFRESH CLARO Y VISIBLE =================
         let touchStartY = 0;
         let currentPull = 0;
         let isRefreshing = false;
@@ -518,18 +618,17 @@
             const diff = e.touches[0].pageY - touchStartY;
 
             if (diff > 0 && window.scrollY <= 0) {
-                currentPull = Math.min(100, Math.pow(diff, 0.85));
-                capsule.style.transform = `translateY(${currentPull - 65}px)`;
+                currentPull = Math.min(130, Math.pow(diff, 0.88));
+                capsule.style.opacity = Math.min(1, currentPull / 40);
+                capsule.style.transform = `translateY(${currentPull - 40}px)`;
                 spinner.style.transform = `rotate(${currentPull * 4}deg)`;
 
-                if (currentPull > 65) {
-                    label.innerText = "Suelta para actualizar";
-                    spinner.classList.add('text-emerald-600');
-                    spinner.classList.remove('text-blue-600');
+                if (currentPull > 75) {
+                    label.innerText = "¡Suelta para sincronizar!";
+                    spinner.className = 'fa-solid fa-arrows-rotate text-emerald-600 text-sm transition-transform duration-200';
                 } else {
                     label.innerText = "Desliza para actualizar";
-                    spinner.classList.add('text-blue-600');
-                    spinner.classList.remove('text-emerald-600');
+                    spinner.className = 'fa-solid fa-arrows-rotate text-blue-600 text-sm transition-transform duration-200';
                 }
             }
         }, { passive: true });
@@ -537,24 +636,27 @@
         window.addEventListener('touchend', async () => {
             if (touchStartY === 0 || isRefreshing) return;
 
-            if (currentPull > 65) {
+            if (currentPull > 75) {
                 isRefreshing = true;
-                if (navigator.vibrate) navigator.vibrate(35);
+                if (navigator.vibrate) navigator.vibrate(40);
                 
-                capsule.style.transform = 'translateY(16px)';
+                capsule.style.transform = 'translateY(25px)';
+                capsule.style.opacity = '1';
                 spinner.classList.add('fa-spin');
                 label.innerText = "Sincronizando Sheets...";
 
                 await cargarInventarioDesdeSheets();
 
-                label.innerText = "¡Listo!";
+                label.innerText = "¡Catálogo al día!";
                 setTimeout(() => {
-                    capsule.style.transform = 'translateY(-65px)';
+                    capsule.style.transform = 'translateY(-80px)';
+                    capsule.style.opacity = '0';
                     spinner.classList.remove('fa-spin');
                     isRefreshing = false;
-                }, 400);
+                }, 600);
             } else {
-                capsule.style.transform = 'translateY(-65px)';
+                capsule.style.transform = 'translateY(-80px)';
+                capsule.style.opacity = '0';
             }
             touchStartY = 0;
             currentPull = 0;
@@ -573,6 +675,7 @@
         function formatearUrlImagen(url) {
             if (!url) return null;
             url = String(url).trim();
+            if (url.startsWith('data:image')) return url; // Retorna base64 directo
             if (!url.startsWith('http')) return null;
             if (url.includes("drive.google.com")) {
                 const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
@@ -581,6 +684,58 @@
                 }
             }
             return url;
+        }
+
+        // ================= COMPRESIÓN DE FOTO DE CÁMARA =================
+        function capturarYProcesarFoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 500; // Máximo 500px para carga ultrarrápida
+                    let w = img.width;
+                    let h = img.height;
+
+                    if (w > h) {
+                        if (w > maxDim) {
+                            h *= maxDim / w;
+                            w = maxDim;
+                        }
+                    } else {
+                        if (h > maxDim) {
+                            w *= maxDim / h;
+                            h = maxDim;
+                        }
+                    }
+
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+
+                    // Comprimir en JPEG ligero (~30-50 KB)
+                    fotoCapturadaBase64 = canvas.toDataURL('image/jpeg', 0.72);
+
+                    // Mostrar preview
+                    document.getElementById('preview-foto-img').src = fotoCapturadaBase64;
+                    document.getElementById('preview-foto-container').classList.remove('hidden');
+                    document.getElementById('label-tomar-foto').innerText = "Foto tomada ✓";
+                    mostrarToast("Foto lista para sincronizar", "fa-camera", "text-blue-500");
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function quitarFotoCapturada() {
+            fotoCapturadaBase64 = null;
+            document.getElementById('input-foto-camara').value = '';
+            document.getElementById('preview-foto-container').classList.add('hidden');
+            document.getElementById('label-tomar-foto').innerText = "Tomar Foto con Cámara";
         }
 
         function vibrarYSonar() {
@@ -602,7 +757,7 @@
 
         async function cargarInventarioDesdeSheets(manual = false) {
             const dot = document.getElementById('status-dot');
-            dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+            dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
 
             try {
                 const response = await fetch(API_URL);
@@ -625,7 +780,7 @@
                             precioCosto: parsearNumero(getVal('costo')),
                             precio: parsearNumero(getVal('venta')),
                             stock: parseInt(parsearNumero(getVal('stock actual') || getVal('stock'))),
-                            stockMin: parseInt(parsearNumero(getVal('minimo'))),
+                            stockMin: parseInt(parsearNumero(getVal('minimo')) || 2),
                             foto: formatearUrlImagen(getVal('imagen') || getVal('foto') || getVal('url'))
                         };
                     }
@@ -633,49 +788,62 @@
 
                 localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
                 actualizarBadge();
-                dot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400";
+                dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400";
                 if (manual) mostrarToast("Catálogo sincronizado con éxito");
                 renderizarInventario();
             } catch (e) {
-                dot.className = "w-2 h-2 rounded-full bg-red-400";
+                dot.className = "w-2.5 h-2.5 rounded-full bg-red-400";
                 mostrarToast("Trabajando con datos locales", "fa-triangle-exclamation", "text-amber-500");
                 actualizarBadge();
             }
         }
 
         function actualizarBadge() {
-            document.getElementById('badge-total').innerText = `${Object.keys(inventario).length} prod.`;
+            const total = Object.keys(inventario).length;
+            document.getElementById('badge-total').innerText = `${total} prod.`;
+            const mTotal = document.getElementById('metric-total');
+            if (mTotal) mTotal.innerText = total;
+
+            const bajos = Object.values(inventario).filter(p => p.stock <= 2).length;
+            const mBajos = document.getElementById('metric-bajos');
+            if (mBajos) mBajos.innerText = bajos;
         }
 
-        // ================= NAVEGACIÓN FLUIDA DE PESTAÑAS (DOCK) =================
+        // ================= NAVEGACIÓN FLUIDA (MÓVIL & DESKTOP) =================
         const TABS = ['verificar', 'inventario', 'registro'];
 
         function cambiarTab(tab) {
             const targetIndex = TABS.indexOf(tab);
             if (targetIndex === -1) return;
 
-            // Mover la píldora de fondo con transición física suave
+            // Mover la píldora en móvil
             const pill = document.getElementById('dock-pill');
             if (pill) {
                 pill.style.transform = `translateX(${targetIndex * 100}%)`;
             }
 
-            // Cambiar estados de botones y vistas
+            // Cambiar vistas y botones
             TABS.forEach((t) => {
                 const vista = document.getElementById(`tab-${t}`);
-                const btn = document.getElementById(`btn-tab-${t}`);
-                const icon = btn.querySelector('i');
+                const btnM = document.getElementById(`btn-tab-${t}`);
+                const btnD = document.getElementById(`btn-desktop-${t}`);
 
                 if (t === tab) {
                     vista.classList.remove('hidden');
-                    btn.classList.add('text-blue-600');
-                    btn.classList.remove('text-slate-400');
-                    icon.classList.add('scale-105');
+                    if (btnM) {
+                        btnM.className = 'flex-1 relative z-10 py-2.5 flex flex-col items-center justify-center gap-0.5 text-blue-600 transition-colors duration-200';
+                    }
+                    if (btnD) {
+                        btnD.className = 'px-4 py-2 rounded-xl text-xs font-black transition-all bg-white shadow-sm text-blue-600 flex items-center gap-2';
+                    }
                 } else {
                     vista.classList.add('hidden');
-                    btn.classList.remove('text-blue-600');
-                    btn.classList.add('text-slate-400');
-                    icon.classList.remove('scale-105');
+                    if (btnM) {
+                        btnM.className = 'flex-1 relative z-10 py-2.5 flex flex-col items-center justify-center gap-0.5 text-slate-400 transition-colors duration-200';
+                    }
+                    if (btnD) {
+                        btnD.className = 'px-4 py-2 rounded-xl text-xs font-black transition-all text-slate-600 hover:text-slate-900 flex items-center gap-2';
+                    }
                 }
             });
 
@@ -683,7 +851,7 @@
             if (tab === 'inventario') renderizarInventario();
         }
 
-        // Cámara
+        // ================= CÁMARA & ESCÁNER =================
         async function abrirCamara(destino) {
             destinoEscaneo = destino;
             flashlightOn = false;
@@ -793,6 +961,11 @@
             document.getElementById('card-nombre').innerText = item.nombre;
             document.getElementById('card-precio').innerText = `S/ ${item.precio.toFixed(2)}`;
             document.getElementById('card-stock').innerText = `${item.stock} un.`;
+            document.getElementById('card-costo').innerText = `Costo: S/ ${item.precioCosto.toFixed(2)}`;
+
+            const alertaStock = document.getElementById('card-alerta-stock');
+            if (item.stock <= 2) alertaStock.classList.remove('hidden');
+            else alertaStock.classList.add('hidden');
 
             const imgEl = document.getElementById('card-img');
             if (item.foto) {
@@ -825,11 +998,23 @@
                     inventario[productoSeleccionado].stock -= 1;
                     localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
                     mostrarDetallesProducto(productoSeleccionado);
+                    actualizarBadge();
                     mostrarToast("Venta registrada (-1)", "fa-cart-shopping", "text-emerald-500");
                     enviarSheets({ accion: "actualizarStock", codigo: productoSeleccionado, delta: -1 });
                 } else {
                     mostrarToast("¡Sin unidades disponibles!", "fa-triangle-exclamation", "text-rose-500");
                 }
+            }
+        }
+
+        async function sumarStockDirecto(cantidad) {
+            if (productoSeleccionado && inventario[productoSeleccionado]) {
+                inventario[productoSeleccionado].stock += cantidad;
+                localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
+                mostrarDetallesProducto(productoSeleccionado);
+                actualizarBadge();
+                mostrarToast(`Stock sumado (+${cantidad})`, "fa-plus", "text-blue-500");
+                enviarSheets({ accion: "actualizarStock", codigo: productoSeleccionado, delta: cantidad });
             }
         }
 
@@ -930,7 +1115,9 @@
             const precio = parseFloat(document.getElementById('nuevo-precio').value);
             const precioCosto = parseFloat(document.getElementById('nuevo-costo').value || 0);
             const stock = parseInt(document.getElementById('nuevo-stock').value);
-            const foto = formatearUrlImagen(document.getElementById('nuevo-foto').value);
+            
+            // Prioridad: foto tomada con cámara (base64) o URL escrita
+            const foto = fotoCapturadaBase64 || formatearUrlImagen(document.getElementById('nuevo-foto').value);
 
             inventario[codigo] = {
                 codigo,
@@ -946,6 +1133,7 @@
             localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
             actualizarBadge();
 
+            // Enviamos el producto junto con fotoBase64 para guardarlo en Drive / Sheets
             await enviarSheets({
                 accion: "crearProducto",
                 codigo: codigo,
@@ -955,62 +1143,110 @@
                 precio: precio,
                 stock: stock,
                 stockMin: 2,
-                foto: foto
+                foto: foto,
+                fotoBase64: fotoCapturadaBase64 || null
             });
 
             btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Google Sheets`;
+            btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Guardar Producto en Sheets`;
 
+            // Resetear formulario
             document.getElementById('nuevo-codigo').value = '';
             document.getElementById('nuevo-nombre').value = '';
             document.getElementById('nuevo-precio').value = '';
             document.getElementById('nuevo-costo').value = '';
             document.getElementById('nuevo-stock').value = '';
             document.getElementById('nuevo-foto').value = '';
+            quitarFotoCapturada();
 
             mostrarToast("Registrado en Sheets", "fa-circle-check", "text-emerald-500");
             mostrarDetallesProducto(codigo);
             cambiarTab('verificar');
         }
 
+        // ================= RENDERIZADO DE INVENTARIO (MÓVIL & ESCRITORIO) =================
         function renderizarInventario() {
-            const lista = document.getElementById('lista-inventario');
+            const listaM = document.getElementById('lista-inventario-mobile');
+            const listaD = document.getElementById('lista-inventario-desktop');
             const filtro = normalizarTexto(document.getElementById('filtro-buscar').value);
-            lista.innerHTML = '';
+            const filtroCat = document.getElementById('filtro-categoria').value;
+
+            listaM.innerHTML = '';
+            listaD.innerHTML = '';
 
             const keys = Object.keys(inventario);
             if (keys.length === 0) {
-                lista.innerHTML = `<p class="text-center text-xs text-slate-400 py-12 font-medium">Inventario vacío. Desliza hacia abajo para sincronizar.</p>`;
+                const emptyMsg = `<p class="text-center text-xs text-slate-400 py-12 font-medium">Inventario vacío. Sincroniza desde Sheets.</p>`;
+                listaM.innerHTML = emptyMsg;
+                listaD.innerHTML = `<tr><td colspan="8" class="text-center py-12 text-slate-400 text-xs">${emptyMsg}</td></tr>`;
                 return;
             }
 
             keys.forEach(cod => {
                 const item = inventario[cod];
-                if (normalizarTexto(item.nombre).includes(filtro) || normalizarTexto(cod).includes(filtro)) {
-                    lista.innerHTML += `
-                        <div class="glass-card p-3 rounded-2xl flex items-center justify-between gap-3 active:scale-[0.99] transition-transform">
-                            ${item.foto ? `<img src="${item.foto}" class="w-12 h-12 rounded-xl object-cover border border-white/80 shadow-sm" onerror="this.remove()">` : ''}
+                const coincideTexto = normalizarTexto(item.nombre).includes(filtro) || normalizarTexto(cod).includes(filtro);
+                const coincideCat = filtroCat === 'TODOS' || normalizarTexto(item.categoria) === normalizarTexto(filtroCat);
+
+                if (coincideTexto && coincideCat) {
+                    const badgeClass = item.stock <= item.stockMin ? 'bg-rose-500/15 text-rose-600 font-black' : 'bg-slate-100 text-slate-700 font-bold';
+
+                    // 1. Tarjeta Móvil
+                    listaM.innerHTML += `
+                        <div class="glass-card p-3.5 rounded-2xl flex items-center justify-between gap-3 active:scale-[0.99] transition-transform">
+                            ${item.foto ? `<img src="${item.foto}" class="w-12 h-12 rounded-xl object-cover border border-white/80 shadow-sm" onerror="this.remove()">` : '<div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-300 text-sm"><i class="fa-solid fa-box"></i></div>'}
                             
                             <div class="flex-1 min-w-0" onclick="mostrarDetallesProducto('${cod}'); cambiarTab('verificar')">
                                 <h4 class="font-black text-slate-900 text-sm truncate">${item.nombre}</h4>
                                 <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-[10px] font-mono text-slate-400">${cod}</span>
+                                    <span class="text-[10px] font-mono text-slate-400 font-bold">${cod}</span>
                                     <span class="text-xs font-black text-emerald-600">S/ ${item.precio.toFixed(2)}</span>
                                 </div>
                             </div>
 
                             <div class="flex items-center gap-1.5">
-                                <span class="text-xs font-black px-2.5 py-1 rounded-xl ${item.stock <= item.stockMin ? 'bg-red-500/15 text-red-600' : 'bg-slate-100 text-slate-700'}">${item.stock} un.</span>
+                                <span class="text-xs px-2.5 py-1 rounded-xl ${badgeClass}">${item.stock} un.</span>
                                 
-                                <button onclick="abrirModalEdicion('${cod}')" class="w-8 h-8 rounded-xl bg-white/80 active:scale-90 border border-white flex items-center justify-center text-slate-600 shadow-sm">
+                                <button onclick="abrirModalEdicion('${cod}')" class="w-8 h-8 rounded-xl bg-white/80 active:scale-90 border border-white flex items-center justify-center text-slate-600 shadow-sm cursor-pointer">
                                     <i class="fa-solid fa-pen text-xs"></i>
                                 </button>
 
-                                <button onclick="eliminarProducto('${cod}')" class="w-8 h-8 rounded-xl bg-red-50 active:scale-90 border border-red-100 flex items-center justify-center text-red-500 shadow-sm">
+                                <button onclick="eliminarProducto('${cod}')" class="w-8 h-8 rounded-xl bg-red-50 active:scale-90 border border-red-100 flex items-center justify-center text-red-500 shadow-sm cursor-pointer">
                                     <i class="fa-solid fa-trash-can text-xs"></i>
                                 </button>
                             </div>
                         </div>
+                    `;
+
+                    // 2. Fila Tabla Escritorio
+                    listaD.innerHTML += `
+                        <tr class="hover:bg-blue-50/40 transition-colors">
+                            <td class="p-4">
+                                ${item.foto ? `<img src="${item.foto}" class="w-10 h-10 rounded-xl object-cover border border-white shadow-sm" onerror="this.remove()">` : '<div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-300"><i class="fa-solid fa-box text-xs"></i></div>'}
+                            </td>
+                            <td class="p-4 font-mono font-bold text-xs text-slate-500">${cod}</td>
+                            <td class="p-4 font-bold text-xs text-blue-700">
+                                <span class="bg-blue-50 border border-blue-200/50 px-2.5 py-1 rounded-lg">${item.categoria}</span>
+                            </td>
+                            <td class="p-4 font-black text-slate-900 hover:text-blue-600 cursor-pointer" onclick="mostrarDetallesProducto('${cod}'); cambiarTab('verificar')">${item.nombre}</td>
+                            <td class="p-4 font-bold text-slate-500">S/ ${item.precioCosto.toFixed(2)}</td>
+                            <td class="p-4 font-black text-emerald-700">S/ ${item.precio.toFixed(2)}</td>
+                            <td class="p-4">
+                                <span class="text-xs px-3 py-1 rounded-xl ${badgeClass}">${item.stock} un.</span>
+                            </td>
+                            <td class="p-4 text-center">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <button onclick="mostrarDetallesProducto('${cod}'); cambiarTab('verificar')" title="Ver en POS" class="w-8 h-8 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-700 shadow-sm cursor-pointer">
+                                        <i class="fa-solid fa-barcode text-xs"></i>
+                                    </button>
+                                    <button onclick="abrirModalEdicion('${cod}')" title="Editar" class="w-8 h-8 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-700 shadow-sm cursor-pointer">
+                                        <i class="fa-solid fa-pen text-xs"></i>
+                                    </button>
+                                    <button onclick="eliminarProducto('${cod}')" title="Eliminar" class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 flex items-center justify-center text-red-600 shadow-sm cursor-pointer">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
                     `;
                 }
             });
