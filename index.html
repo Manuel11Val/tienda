@@ -44,10 +44,9 @@
         }
 
         .glass-dock {
-            background: rgba(255, 255, 255, 0.84);
+            background: rgba(255, 255, 255, 0.82);
             backdrop-filter: blur(32px) saturate(220%);
             -webkit-backdrop-filter: blur(32px) saturate(220%);
-            border: 1px solid rgba(255, 255, 255, 0.9);
             box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.9);
         }
 
@@ -56,6 +55,11 @@
             backdrop-filter: blur(35px) saturate(200%);
             -webkit-backdrop-filter: blur(35px) saturate(200%);
             border-top: 1px solid rgba(255, 255, 255, 0.95);
+        }
+
+        /* Curva de movimiento elástica natural de iOS */
+        .dock-pill-spring {
+            transition: transform 0.32s cubic-bezier(0.25, 1, 0.35, 1);
         }
 
         @keyframes scanLaser {
@@ -364,22 +368,33 @@
         </div>
     </div>
 
-    <!-- Dock Inferior Flotante -->
+    <!-- ================= DOCK FLOTANTE CON CÁPSULA DESLIZANTE NATIVA ================= -->
     <nav class="fixed bottom-4 left-4 right-4 max-w-md mx-auto z-40">
-        <div class="glass-dock rounded-3xl px-6 py-2.5 flex justify-between items-center">
-            <button onclick="cambiarTab('verificar')" id="btn-tab-verificar" class="flex flex-col items-center gap-1 text-blue-600 font-black text-[10px] active:scale-90 transition-transform">
-                <i class="fa-solid fa-barcode text-lg"></i> Consultar
+        <div class="glass-dock rounded-[28px] p-1.5 flex items-center relative border border-white/80 shadow-2xl">
+            <!-- Píldora deslizante de cristal con amortiguación iOS -->
+            <div id="dock-pill" class="absolute top-1.5 bottom-1.5 rounded-[22px] bg-white/95 shadow-md border border-white dock-pill-spring pointer-events-none" style="width: calc((100% - 12px) / 3); left: 6px; transform: translateX(0%);"></div>
+
+            <!-- Botón 1: Consultar -->
+            <button onclick="cambiarTab('verificar')" id="btn-tab-verificar" class="flex-1 relative z-10 py-2.5 flex flex-col items-center justify-center gap-0.5 text-blue-600 transition-colors duration-200">
+                <i class="fa-solid fa-barcode text-base transition-transform duration-200 scale-105"></i>
+                <span class="text-[10px] font-bold tracking-tight">Consultar</span>
             </button>
-            <button onclick="cambiarTab('inventario')" id="btn-tab-inventario" class="flex flex-col items-center gap-1 text-slate-400 font-bold text-[10px] active:scale-90 transition-transform">
-                <i class="fa-solid fa-boxes-stacked text-lg"></i> Inventario
+
+            <!-- Botón 2: Inventario -->
+            <button onclick="cambiarTab('inventario')" id="btn-tab-inventario" class="flex-1 relative z-10 py-2.5 flex flex-col items-center justify-center gap-0.5 text-slate-400 transition-colors duration-200">
+                <i class="fa-solid fa-boxes-stacked text-base transition-transform duration-200"></i>
+                <span class="text-[10px] font-bold tracking-tight">Inventario</span>
             </button>
-            <button onclick="cambiarTab('registro')" id="btn-tab-registro" class="flex flex-col items-center gap-1 text-slate-400 font-bold text-[10px] active:scale-90 transition-transform">
-                <i class="fa-solid fa-circle-plus text-lg"></i> Añadir
+
+            <!-- Botón 3: Añadir -->
+            <button onclick="cambiarTab('registro')" id="btn-tab-registro" class="flex-1 relative z-10 py-2.5 flex flex-col items-center justify-center gap-0.5 text-slate-400 transition-colors duration-200">
+                <i class="fa-solid fa-circle-plus text-base transition-transform duration-200"></i>
+                <span class="text-[10px] font-bold tracking-tight">Añadir</span>
             </button>
         </div>
     </nav>
 
-    <!-- Script: Generador de Ícono iOS y Lógica -->
+    <!-- Script de Lógica -->
     <script>
         // ================= GENERADOR DE ÍCONO DE IPHONE EN HD =================
         function generarIconoIOS() {
@@ -388,41 +403,35 @@
             canvas.height = 180;
             const ctx = canvas.getContext('2d');
 
-            // 1. Fondo Degradado Estilo iOS 18 / Apple Music
             const grad = ctx.createLinearGradient(0, 0, 180, 180);
-            grad.addColorStop(0, '#3b82f6'); // Azul vibrante
-            grad.addColorStop(0.5, '#6366f1'); // Índigo
-            grad.addColorStop(1, '#a855f7'); // Violeta profundo
+            grad.addColorStop(0, '#3b82f6');
+            grad.addColorStop(0.5, '#6366f1');
+            grad.addColorStop(1, '#a855f7');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, 180, 180);
 
-            // 2. Reflejo especular superior de cristal líquido
             const gloss = ctx.createLinearGradient(0, 0, 0, 90);
             gloss.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
             gloss.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.fillStyle = gloss;
             ctx.fillRect(0, 0, 180, 90);
 
-            // 3. Glifo Central Minimalista (Bolsa de tienda + Rayo láser)
             ctx.strokeStyle = '#ffffff';
             ctx.fillStyle = '#ffffff';
             ctx.lineWidth = 9;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // Asa de la bolsa
             ctx.beginPath();
             ctx.arc(90, 75, 22, Math.PI, 0, false);
             ctx.stroke();
 
-            // Cuerpo de la bolsa
             ctx.beginPath();
             ctx.roundRect(45, 75, 90, 72, 16);
             ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
             ctx.fill();
             ctx.stroke();
 
-            // Código de barras interior
             ctx.lineWidth = 5;
             ctx.beginPath();
             ctx.moveTo(63, 98); ctx.lineTo(63, 126);
@@ -432,7 +441,6 @@
             ctx.moveTo(111, 98); ctx.lineTo(111, 126);
             ctx.stroke();
 
-            // Haz láser horizontal cian
             ctx.strokeStyle = '#38bdf8';
             ctx.lineWidth = 5;
             ctx.shadowColor = '#38bdf8';
@@ -441,15 +449,12 @@
             ctx.moveTo(35, 112);
             ctx.lineTo(145, 112);
             ctx.stroke();
-            ctx.shadowBlur = 0; // reset
+            ctx.shadowBlur = 0;
 
             const iconDataUrl = canvas.toDataURL('image/png');
-
-            // Asignar al apple-touch-icon y al favicon
             document.getElementById('ios-touch-icon').href = iconDataUrl;
             document.getElementById('ios-favicon').href = iconDataUrl;
 
-            // Dibujar también en el pequeño canvas del header
             const miniCanvas = document.getElementById('app-mini-icon');
             if (miniCanvas) {
                 const miniCtx = miniCanvas.getContext('2d');
@@ -642,17 +647,43 @@
             document.getElementById('badge-total').innerText = `${Object.keys(inventario).length} prod.`;
         }
 
-        function cambiarTab(tab) {
-            ['verificar', 'inventario', 'registro'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`btn-tab-${t}`).className = "flex flex-col items-center gap-1 text-slate-400 font-bold text-[10px] active:scale-90 transition-transform";
-            });
-            document.getElementById(`tab-${tab}`).classList.remove('hidden');
-            document.getElementById(`btn-tab-${tab}`).className = "flex flex-col items-center gap-1 text-blue-600 font-black text-[10px] active:scale-90 transition-transform";
+        // ================= NAVEGACIÓN FLUIDA DE PESTAÑAS (DOCK) =================
+        const TABS = ['verificar', 'inventario', 'registro'];
 
+        function cambiarTab(tab) {
+            const targetIndex = TABS.indexOf(tab);
+            if (targetIndex === -1) return;
+
+            // Mover la píldora de fondo con transición física suave
+            const pill = document.getElementById('dock-pill');
+            if (pill) {
+                pill.style.transform = `translateX(${targetIndex * 100}%)`;
+            }
+
+            // Cambiar estados de botones y vistas
+            TABS.forEach((t) => {
+                const vista = document.getElementById(`tab-${t}`);
+                const btn = document.getElementById(`btn-tab-${t}`);
+                const icon = btn.querySelector('i');
+
+                if (t === tab) {
+                    vista.classList.remove('hidden');
+                    btn.classList.add('text-blue-600');
+                    btn.classList.remove('text-slate-400');
+                    icon.classList.add('scale-105');
+                } else {
+                    vista.classList.add('hidden');
+                    btn.classList.remove('text-blue-600');
+                    btn.classList.add('text-slate-400');
+                    icon.classList.remove('scale-105');
+                }
+            });
+
+            if (navigator.vibrate) navigator.vibrate(20);
             if (tab === 'inventario') renderizarInventario();
         }
 
+        // Cámara
         async function abrirCamara(destino) {
             destinoEscaneo = destino;
             flashlightOn = false;
