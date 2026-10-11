@@ -17,7 +17,6 @@
             overscroll-behavior-y: contain;
         }
 
-        /* Acabados de Cristal Líquido (Liquid Glass) */
         .glass-nav {
             background: rgba(255, 255, 255, 0.68);
             backdrop-filter: blur(28px) saturate(210%);
@@ -48,7 +47,6 @@
             border-top: 1px solid rgba(255, 255, 255, 0.95);
         }
 
-        /* Animación del haz láser del escáner */
         @keyframes scanLaser {
             0% { top: 6%; opacity: 0.3; }
             50% { top: 88%; opacity: 1; }
@@ -71,7 +69,7 @@
 </head>
 <body class="bg-gradient-to-br from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0] text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden">
 
-    <!-- Orbes de luz atmosférica líquida (Mesh de Apple Music) -->
+    <!-- Orbes atmosféricos -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div class="absolute -top-24 -left-20 w-80 h-80 bg-rose-400/20 rounded-full blur-[90px]"></div>
         <div class="absolute top-1/4 -right-24 w-96 h-96 bg-indigo-400/20 rounded-full blur-[100px]"></div>
@@ -250,7 +248,7 @@
 
     </main>
 
-    <!-- ================= MODAL DE EDICIÓN / REPOSICIÓN ================= -->
+    <!-- ================= MODAL DE EDICIÓN CON ELIMINACIÓN ================= -->
     <div id="modal-edicion" class="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-50 hidden flex flex-col justify-end transition-opacity duration-300">
         <div class="glass-modal rounded-t-[36px] p-6 max-w-md mx-auto w-full space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl">
             <div class="w-12 h-1.5 bg-slate-300/80 rounded-full mx-auto -mt-2 mb-2"></div>
@@ -300,14 +298,17 @@
                 <button type="submit" class="w-full bg-blue-600 active:scale-[0.98] text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-blue-500/25">
                     Guardar Cambios en Sheets
                 </button>
+
+                <!-- Botón de eliminación en el modal -->
+                <button type="button" onclick="eliminarProductoDesdeModal()" class="w-full bg-red-50 active:scale-[0.98] text-red-600 border border-red-200/80 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 mt-2">
+                    <i class="fa-solid fa-trash-can"></i> Eliminar Producto Permanentemente
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- ================= MODAL ESCÁNER CINEMATOGRÁFICO ================= -->
+    <!-- ================= MODAL ESCÁNER ================= -->
     <div id="modal-scanner" class="fixed inset-0 bg-black/95 backdrop-blur-2xl z-50 hidden flex flex-col justify-between p-6">
-        
-        <!-- Controles Superiores -->
         <div class="flex justify-between items-center text-white pt-6 z-10">
             <div>
                 <span class="text-[10px] font-black tracking-widest uppercase text-blue-400">Escáner Óptico</span>
@@ -315,28 +316,22 @@
             </div>
             
             <div class="flex items-center gap-2">
-                <!-- Botón Linterna/Flash -->
                 <button id="btn-torch" onclick="toggleFlashlight()" class="w-10 h-10 bg-white/15 active:bg-white/30 rounded-full flex items-center justify-center text-white text-sm border border-white/20 transition-all">
                     <i id="torch-icon" class="fa-solid fa-bolt"></i>
                 </button>
-                <!-- Cerrar -->
                 <button onclick="cerrarCamara()" class="w-10 h-10 bg-white/15 active:bg-white/30 rounded-full flex items-center justify-center text-white text-base border border-white/20 transition-all">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Visor con Retícula Dinámica -->
         <div class="w-full max-w-xs mx-auto my-auto relative">
             <div id="scanner-view" class="w-full aspect-square bg-slate-900/90 rounded-3xl overflow-hidden border border-white/20 shadow-2xl relative"></div>
-
-            <!-- Retícula Cuadrada con Brackets Neumórficos -->
             <div class="absolute inset-5 pointer-events-none flex flex-col justify-between p-1">
                 <div class="flex justify-between">
                     <div class="w-7 h-7 border-t-4 border-l-4 border-blue-400 rounded-tl-xl shadow-sm"></div>
                     <div class="w-7 h-7 border-t-4 border-r-4 border-blue-400 rounded-tr-xl shadow-sm"></div>
                 </div>
-                <!-- Haz Láser Animado -->
                 <div class="w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent shadow-[0_0_12px_#ef4444] scan-laser-line rounded-full"></div>
                 <div class="flex justify-between">
                     <div class="w-7 h-7 border-b-4 border-l-4 border-blue-400 rounded-bl-xl shadow-sm"></div>
@@ -345,13 +340,12 @@
             </div>
         </div>
 
-        <!-- Pie Informativo -->
         <div class="text-center text-white/50 text-xs font-semibold pb-4">
             Lectura automática • EAN-13, UPC, Code 128 y QR
         </div>
     </div>
 
-    <!-- Dock Inferior Flotante (Liquid Glass) -->
+    <!-- Dock Inferior Flotante -->
     <nav class="fixed bottom-4 left-4 right-4 max-w-md mx-auto z-40">
         <div class="glass-dock rounded-3xl px-6 py-2.5 flex justify-between items-center">
             <button onclick="cambiarTab('verificar')" id="btn-tab-verificar" class="flex flex-col items-center gap-1 text-blue-600 font-black text-[10px] active:scale-90 transition-transform">
@@ -366,7 +360,7 @@
         </div>
     </nav>
 
-    <!-- Lógica de Operaciones y Gestos -->
+    <!-- Script de Lógica -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxxYR9UR6hvRh8TVK_cpLKVlGR68fRS95F5LmcffYf4f49DU9xZkcAxZzyx1nab71a7/exec";
 
@@ -384,7 +378,7 @@
                 .replace(/[\u0300-\u036f]/g, "");
         }
 
-        // ================= PULL-TO-REFRESH FLUIDO =================
+        // Pull-to-refresh
         let touchStartY = 0;
         let currentPull = 0;
         let isRefreshing = false;
@@ -393,20 +387,15 @@
         const label = document.getElementById('ptr-text');
 
         window.addEventListener('touchstart', (e) => {
-            if (window.scrollY <= 0 && !isRefreshing) {
-                touchStartY = e.touches[0].pageY;
-            } else {
-                touchStartY = 0;
-            }
+            if (window.scrollY <= 0 && !isRefreshing) touchStartY = e.touches[0].pageY;
+            else touchStartY = 0;
         }, { passive: true });
 
         window.addEventListener('touchmove', (e) => {
             if (touchStartY === 0 || isRefreshing) return;
-            const y = e.touches[0].pageY;
-            const diff = y - touchStartY;
+            const diff = e.touches[0].pageY - touchStartY;
 
             if (diff > 0 && window.scrollY <= 0) {
-                // Curva de resistencia de amortiguación
                 currentPull = Math.min(100, Math.pow(diff, 0.85));
                 capsule.style.transform = `translateY(${currentPull - 65}px)`;
                 spinner.style.transform = `rotate(${currentPull * 4}deg)`;
@@ -547,7 +536,7 @@
             if (tab === 'inventario') renderizarInventario();
         }
 
-        // ================= CÁMARA Y CONTROL DE FLASH =================
+        // Cámara
         async function abrirCamara(destino) {
             destinoEscaneo = destino;
             flashlightOn = false;
@@ -585,15 +574,10 @@
             if (!html5QrCode || !html5QrCode.isScanning) return;
             try {
                 flashlightOn = !flashlightOn;
-                await html5QrCode.applyVideoConstraints({
-                    advanced: [{ torch: flashlightOn }]
-                });
+                await html5QrCode.applyVideoConstraints({ advanced: [{ torch: flashlightOn }] });
                 const btn = document.getElementById('btn-torch');
-                if (flashlightOn) {
-                    btn.classList.add('bg-amber-400', 'text-slate-900');
-                } else {
-                    btn.classList.remove('bg-amber-400', 'text-slate-900');
-                }
+                if (flashlightOn) btn.classList.add('bg-amber-400', 'text-slate-900');
+                else btn.classList.remove('bg-amber-400', 'text-slate-900');
             } catch (e) {
                 alert("Tu dispositivo o navegador no admite control de linterna web.");
             }
@@ -682,7 +666,7 @@
                     body: JSON.stringify(payload)
                 });
             } catch (e) {
-                console.error("Error sincronizando:", e);
+                console.error("Error al enviar a Sheets:", e);
             }
         }
 
@@ -699,6 +683,46 @@
             }
         }
 
+        // ================= OPERACIONES DE ELIMINACIÓN =================
+        async function eliminarProducto(codigo) {
+            const item = inventario[codigo];
+            if (!item) return;
+
+            const confirmar = confirm(`¿Estás seguro de ELIMINAR permanentemente:\n\n"${item.nombre}" (${codigo})?\n\nEsta acción borrará la fila directamente en Google Sheets.`);
+            if (!confirmar) return;
+
+            // 1. Borrar de la memoria local
+            delete inventario[codigo];
+            localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
+            actualizarBadge();
+            renderizarInventario();
+
+            // 2. Si estaba viéndose en la pestaña de verificación, ocultarlo
+            if (productoSeleccionado === codigo) {
+                document.getElementById('card-producto').classList.add('hidden');
+                document.getElementById('card-vacio').classList.remove('hidden');
+                productoSeleccionado = null;
+            }
+
+            // 3. Cerrar modal de edición si estaba abierto
+            cerrarModalEdicion();
+
+            // 4. Enviar orden de borrado físico a Google Sheets
+            await enviarSheets({
+                accion: "eliminarProducto",
+                codigo: codigo
+            });
+
+            if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+            alert(`"${item.nombre}" ha sido eliminado de tu inventario y de Google Sheets.`);
+        }
+
+        function eliminarProductoDesdeModal() {
+            const cod = document.getElementById('edit-codigo').value;
+            if (cod) eliminarProducto(cod);
+        }
+
+        // ================= MODAL EDICIÓN =================
         function abrirModalEdicion(codigo) {
             const item = inventario[codigo];
             if (!item) return;
@@ -834,11 +858,17 @@
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-1.5">
                                 <span class="text-xs font-black px-2.5 py-1 rounded-xl ${item.stock <= item.stockMin ? 'bg-red-500/15 text-red-600' : 'bg-slate-100 text-slate-700'}">${item.stock} un.</span>
                                 
+                                <!-- Botón Editar -->
                                 <button onclick="abrirModalEdicion('${cod}')" class="w-8 h-8 rounded-xl bg-white/80 active:scale-90 border border-white flex items-center justify-center text-slate-600 shadow-sm">
                                     <i class="fa-solid fa-pen text-xs"></i>
+                                </button>
+
+                                <!-- Botón Eliminar Rápido -->
+                                <button onclick="eliminarProducto('${cod}')" class="w-8 h-8 rounded-xl bg-red-50 active:scale-90 border border-red-100 flex items-center justify-center text-red-500 shadow-sm">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
                                 </button>
                             </div>
                         </div>
