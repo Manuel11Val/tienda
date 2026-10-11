@@ -86,10 +86,6 @@
             border: 1px solid rgba(255, 255, 255, 0.98);
         }
 
-        .dock-pill-spring {
-            transition: transform 0.32s cubic-bezier(0.25, 1, 0.35, 1);
-        }
-
         @keyframes scanLaser {
             0% { top: 6%; opacity: 0.3; }
             50% { top: 88%; opacity: 1; }
@@ -110,7 +106,6 @@
         ::-webkit-scrollbar { display: none; }
     </style>
 
-    <!-- Rediseño visual: Bodega & Ropa / Liquid Glass refinado -->
     <style id="br-visual-refresh">
       :root {
         --br-ink: #20231f;
@@ -185,47 +180,10 @@
         #card-producto { padding:14px !important; }
         #btn-scanner-action { padding-left:12px !important; padding-right:12px !important; }
       }
-      @media (prefers-reduced-motion:reduce) {
-        *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
-      }
     </style>
-
-
-    <style id="bodega-prioridad-visual-uso">
-      :root { color-scheme: light; }
-      body { background: radial-gradient(ellipse at 10% 0%, rgba(219,232,221,.72), transparent 34%), linear-gradient(145deg,#f7f7f3 0%,#edf1ec 52%,#f8f8f5 100%) !important; color:#202923; }
-      .glass-card { background:rgba(255,255,252,.76) !important; border:1px solid rgba(255,255,255,.9) !important; box-shadow:0 8px 28px rgba(36,55,42,.055), inset 0 1px 0 rgba(255,255,255,.85) !important; backdrop-filter:blur(22px) saturate(135%); -webkit-backdrop-filter:blur(22px) saturate(135%); }
-      header { background:rgba(249,250,246,.84) !important; border-bottom:1px solid rgba(216,225,216,.75) !important; backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%); }
-      #input-buscar-codigo { min-height:42px; font-size:14px !important; }
-      #input-buscar-codigo:focus, input:focus, select:focus { outline:none; }
-      .focus\:ring-blue-500:focus, .focus\:ring-2:focus { --tw-ring-color:rgba(75,112,86,.22) !important; }
-      #card-producto { box-shadow:0 14px 36px rgba(40,65,47,.09) !important; }
-      #card-nombre { white-space:normal !important; overflow-wrap:anywhere; }
-      #card-precio { font-size:clamp(1.35rem,4vw,1.8rem) !important; letter-spacing:-.045em; }
-      #resultados-busqueda-rapida { position:relative; z-index:30; border:1px solid rgba(207,220,208,.8) !important; box-shadow:0 16px 34px rgba(34,51,38,.11) !important; }
-      #resultados-busqueda-rapida button:focus-visible, button:focus-visible { outline:2px solid #66876d; outline-offset:2px; }
-      #tab-verificar button, #tab-inventario button, #tab-registro button { touch-action:manipulation; }
-      #btn-tab-verificar, #btn-tab-inventario, #btn-tab-registro { color:#526457 !important; }
-      #btn-tab-verificar { background:rgba(228,237,228,.92) !important; }
-      #sync-progress-bar { background:linear-gradient(90deg,#66876d,#b6cbb6,#66876d) !important; }
-      input, select, textarea { accent-color:#55775e; }
-      @media (max-width:640px) {
-        #main-content { padding-left:12px !important; padding-right:12px !important; }
-        #tab-verificar { gap:12px; }
-        #card-producto { padding:14px !important; }
-        #card-producto .grid.grid-cols-3 { gap:7px !important; }
-        #card-producto .grid.grid-cols-3 > div { padding:10px 5px !important; min-width:0; }
-        #card-producto .grid.grid-cols-3 > div span:last-child { overflow-wrap:anywhere; }
-        #card-producto .grid.grid-cols-3 button, #card-producto button { min-height:42px; }
-        #tab-inventario .glass-card { border-radius:18px !important; }
-      }
-      @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:.01ms !important; } }
-    </style>
-
 </head>
 <body class="bg-gradient-to-br from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0] text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden">
 
-    <!-- Orbes atmosféricos estilo Apple Music -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div class="absolute -top-28 -left-24 w-80 h-80 lg:w-[34rem] lg:h-[34rem] bg-rose-400/25 rounded-full blur-[100px] lg:blur-[150px]"></div>
         <div class="absolute top-1/4 -right-28 w-96 h-96 lg:w-[38rem] lg:h-[38rem] bg-indigo-400/25 rounded-full blur-[110px] lg:blur-[160px]"></div>
@@ -240,7 +198,7 @@
         </div>
     </div>
 
-    <!-- Indicador Cápsula Pull-To-Refresh (Posicionado limpiamente por debajo del Header) -->
+    <!-- Indicador Cápsula Pull-To-Refresh -->
     <div id="ptr-capsule" class="fixed safe-ptr-top left-0 right-0 flex justify-center items-center pointer-events-none z-50 transition-all duration-300 ease-out opacity-0" style="transform: translateY(-80px);">
         <div class="glass-dock px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-3 border border-white/95 bg-white/95">
             <i id="ptr-spinner" class="fa-solid fa-arrows-rotate text-blue-600 text-sm transition-transform duration-200"></i>
@@ -248,7 +206,6 @@
         </div>
     </div>
 
-    <!-- Header Glass Superior con bajada adaptada a Notch / Dynamic Island -->
     <header class="sticky top-0 z-40 px-3.5 pb-2 safe-header-top glass-nav">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2.5">
@@ -277,7 +234,6 @@
                 <button onclick="cambiarTab('registro')" id="btn-desktop-registro" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer">
                     <i class="fa-solid fa-cloud-arrow-up"></i> Registrar
                 </button>
-                <!-- Botón de Escáner en Escritorio -->
                 <button onclick="ejecutarEscaneoMenu()" class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-sm shadow-blue-500/30 flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer">
                     <i class="fa-solid fa-barcode text-xs"></i> Escanear
                 </button>
@@ -296,17 +252,14 @@
         <div id="sync-progress-bar" class="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-blue-600 via-sky-400 to-indigo-600 w-0 transition-all duration-300 opacity-0 pointer-events-none"></div>
     </header>
 
-    <!-- Contenido Dinámico Adaptable (Compactado para visualización directa) -->
     <main id="main-content" class="relative z-10 max-w-6xl mx-auto w-full p-2.5 sm:p-4 flex-1 pb-24 lg:pb-10">
 
         <!-- ================= TAB 1: CONSULTA / VENTA ================= -->
         <section id="tab-verificar" class="space-y-2.5 sm:space-y-3.5">
-            
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-2.5 sm:gap-4">
                 
-                <!-- Columna Izquierda en PC: Buscador y Métricas Rápidas -->
+                <!-- Columna Izquierda: Buscador y Métricas Rápidas -->
                 <div class="lg:col-span-5 space-y-2 sm:space-y-2.5">
-                    <!-- Buscador Compacto -->
                     <div class="glass-card p-1.5 sm:p-2 rounded-2xl shadow-xs border border-white/95 flex items-center gap-1.5 transition-all focus-within:ring-2 focus-within:ring-blue-500/30">
                         <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs ml-2"></i>
                         <input type="text" id="input-buscar-codigo" placeholder="Código o nombre (ej: 775..., Coca)..." class="w-full py-1 bg-transparent text-xs sm:text-sm focus:outline-none font-semibold text-slate-800 placeholder-slate-400" oninput="alEscribirBusqueda(this.value)" onkeydown="if(event.key==='Enter') buscarPorCodigoManual()">
@@ -340,9 +293,8 @@
                     </div>
                 </div>
 
-                <!-- Columna Derecha en PC: Ficha del Producto Encontrado / Estado Vacío -->
                 <div class="lg:col-span-7">
-                    <!-- Ficha del Producto Encontrado (Rediseño Compacto) -->
+                    <!-- Ficha del Producto Encontrado -->
                     <div id="card-producto" class="hidden glass-card p-3 sm:p-4.5 rounded-2xl sm:rounded-3xl space-y-2.5 sm:space-y-3.5 border border-white shadow-lg">
                         <div class="flex gap-2.5 items-center">
                             <img id="card-img" src="" class="w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl object-cover bg-slate-100 border border-white/90 shadow-xs hidden flex-shrink-0" onerror="this.classList.add('hidden')">
@@ -385,7 +337,7 @@
                         </div>
                     </div>
 
-                    <!-- Estado Vacío Compacto -->
+                    <!-- Estado Vacío -->
                     <div id="card-vacio" class="text-center py-10 sm:py-14 px-4 glass-card rounded-2xl sm:rounded-3xl border border-white">
                         <div class="w-12 h-12 bg-slate-100/90 rounded-2xl flex items-center justify-center mx-auto mb-2 text-slate-400 text-xl shadow-inner border border-white">
                             <i class="fa-solid fa-barcode"></i>
@@ -466,7 +418,8 @@
                         </div>
                         <div>
                             <label class="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-0.5">PRECIO VENTA (S/)</label>
-                            <input type="number" step="0.10" id="nuevo-precio" required placeholder="0.00" class="w-full p-2.5 bg-white/80 border border-slate-200/80 rounded-xl text-xs sm:text-sm font-black text-emerald-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <!-- Teclado numérico decimal en smartphone -->
+                            <input type="number" step="0.10" id="nuevo-precio" inputmode="decimal" required placeholder="0.00" class="w-full p-2.5 bg-white/80 border border-slate-200/80 rounded-xl text-xs sm:text-sm font-black text-emerald-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
                     </div>
 
@@ -478,15 +431,16 @@
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-0.5">STOCK INICIAL</label>
-                            <input type="number" id="nuevo-stock" required placeholder="0" class="w-full p-2.5 bg-white/80 border border-slate-200/80 rounded-xl text-xs sm:text-sm font-black focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <!-- Teclado numérico entero en smartphone -->
+                            <input type="number" id="nuevo-stock" inputmode="numeric" pattern="[0-9]*" required placeholder="0" class="w-full p-2.5 bg-white/80 border border-slate-200/80 rounded-xl text-xs sm:text-sm font-black focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-0.5">COSTO (S/)</label>
-                            <input type="number" step="0.10" id="nuevo-costo" placeholder="0.00" class="w-full p-2.5 bg-white/80 border border-slate-200/80 rounded-xl text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <!-- Teclado numérico decimal en smartphone -->
+                            <input type="number" step="0.10" id="nuevo-costo" inputmode="decimal" placeholder="0.00" class="w-full p-2.5 bg-white/80 border border-slate-200/80 rounded-xl text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
                     </div>
 
-                    <!-- FOTO EXCLUSIVA POR CÁMARA -->
                     <div class="bg-slate-50/80 border border-slate-200/80 p-3 rounded-2xl space-y-2">
                         <span class="block text-[9px] font-black uppercase text-slate-500 tracking-wider">Fotografía del Producto</span>
                         <div class="flex items-center gap-2.5">
@@ -548,14 +502,16 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">PRECIO VENTA (S/)</label>
-                        <input type="number" step="0.10" id="edit-precio" required class="w-full p-3 bg-white/70 border border-slate-200/80 rounded-2xl text-sm font-black text-emerald-700 focus:outline-none">
+                        <!-- Teclado numérico decimal en smartphone -->
+                        <input type="number" step="0.10" id="edit-precio" inputmode="decimal" required class="w-full p-3 bg-white/70 border border-slate-200/80 rounded-2xl text-sm font-black text-emerald-700 focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">STOCK TOTAL</label>
-                        <input type="number" id="edit-stock" required class="w-full p-3 bg-white/70 border border-slate-200/80 rounded-2xl text-sm font-black focus:outline-none">
+                        <!-- Teclado numérico entero en smartphone -->
+                        <input type="number" id="edit-stock" inputmode="numeric" pattern="[0-9]*" required class="w-full p-3 bg-white/70 border border-slate-200/80 rounded-2xl text-sm font-black focus:outline-none">
                     </div>
                 </div>
-                <!-- FOTO EXCLUSIVA POR CÁMARA EN EDICIÓN -->
+
                 <div class="bg-slate-50/80 border border-slate-200/80 p-3 rounded-2xl space-y-2">
                     <span class="block text-[9px] font-black uppercase text-slate-500 tracking-wider">Fotografía (Solo Cámara)</span>
                     <div class="flex items-center gap-2.5">
@@ -577,10 +533,25 @@
                     Guardar Cambios en Sheets
                 </button>
 
-                <button type="button" onclick="eliminarProductoDesdeModal()" class="w-full bg-red-50 hover:bg-red-100 active:scale-[0.98] text-red-600 border border-red-200/80 py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 mt-2 cursor-pointer">
+                <button type="button" onclick="confirmarEliminarProductoModal()" class="w-full bg-red-50 hover:bg-red-100 active:scale-[0.98] text-red-600 border border-red-200/80 py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 mt-2 cursor-pointer">
                     <i class="fa-solid fa-trash-can"></i> Eliminar Producto Permanentemente
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMACIÓN DE ELIMINACIÓN NATIVO LIQUID GLASS (Sin usar confirm() invasivo) -->
+    <div id="modal-confirmar-eliminar" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-modal rounded-3xl p-5 max-w-xs w-full text-center space-y-3 border border-white shadow-2xl">
+            <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-xl shadow-xs">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h4 class="font-black text-slate-900 text-base">¿Eliminar producto?</h4>
+            <p id="confirmar-eliminar-nombre" class="text-xs text-slate-500 font-semibold truncate">Esta acción quitará el producto del inventario.</p>
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="cerrarConfirmarEliminar()" class="py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all">Cancelar</button>
+                <button onclick="ejecutarEliminacionConfirmada()" class="py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black active:scale-95 transition-all">Eliminar</button>
+            </div>
         </div>
     </div>
 
@@ -624,7 +595,6 @@
 
     <!-- ================= DOCK FLOTANTE CON ACCESO DE ESCÁNER APPLE LIQUID GLASS ================= -->
     <nav class="md:hidden fixed safe-bottom-dock left-3.5 right-3.5 max-w-sm mx-auto z-40 flex items-center gap-2.5">
-        <!-- Barra de navegación segmentada (iOS Tab Bar) -->
         <div class="flex-1 glass-dock rounded-[24px] p-1.5 flex items-center justify-between border border-white/95 shadow-2xl backdrop-blur-3xl">
             <!-- Pestaña 1: Consultar / POS -->
             <button onclick="cambiarTab('verificar')" id="btn-tab-verificar" class="flex-1 py-1.5 px-2 flex flex-col items-center justify-center gap-0.5 text-blue-600 bg-blue-50/90 rounded-[18px] transition-all duration-200 font-black shadow-xs cursor-pointer">
@@ -645,7 +615,7 @@
             </button>
         </div>
 
-        <!-- BOTÓN DE ESCÁNER NATIVO (Minimalist Apple Action Capsule) -->
+        <!-- Botón Escáner Cápsula -->
         <button onclick="ejecutarEscaneoMenu()" id="btn-scanner-action" class="h-[52px] px-3.5 rounded-[24px] bg-slate-900/95 hover:bg-slate-900 text-white shadow-xl shadow-slate-900/25 flex items-center justify-center gap-2 border border-white/20 active:scale-95 transition-all cursor-pointer backdrop-blur-2xl" title="Escanear Código">
             <div class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs">
                 <i class="fa-solid fa-barcode"></i>
@@ -657,7 +627,6 @@
     <script>
         // ================= GENERADOR DE ÍCONO NATIVO IOS EN ULTRA ALTA DEFINICIÓN =================
         function generarIconoIOS() {
-            // Identidad nueva: bolsa boutique + detalle de etiqueta, en verde oliva y marfil.
             const canvas = document.createElement('canvas');
             canvas.width = 512; canvas.height = 512;
             const ctx = canvas.getContext('2d');
@@ -694,7 +663,7 @@
             ctx.quadraticCurveTo(205,125,256,125); ctx.quadraticCurveTo(307,125,307,170);
             ctx.lineTo(307,207); ctx.stroke();
 
-            // Etiqueta discreta con monograma B&R
+            // Etiqueta con monograma B&R
             ctx.fillStyle='#f7f4e9';
             ctx.beginPath(); ctx.roundRect(185,238,142,91,18); ctx.fill();
             ctx.fillStyle='#405b47';
@@ -716,7 +685,6 @@
         }
         generarIconoIOS();
 
-        // ================= CONFIGURACIÓN Y ESTADO =================
         const API_URL = "https://script.google.com/macros/s/AKfycbxxYR9UR6hvRh8TVK_cpLKVlGR68fRS95F5LmcffYf4f49DU9xZkcAxZzyx1nab71a7/exec";
 
         let inventario = JSON.parse(localStorage.getItem('bodega_sheets_cache')) || {};
@@ -725,8 +693,9 @@
         let destinoEscaneo = 'verificar';
         let flashlightOn = false;
         let isProcessingScan = false;
-        let fotoCapturadaBase64 = null; // Foto para nuevo producto
-        let fotoEdicionBase64 = null;   // Foto para edición de producto
+        let fotoCapturadaBase64 = null;
+        let fotoEdicionBase64 = null;
+        let codigoAEliminarPendiente = null;
 
         let toastTimeout = null;
         function mostrarToast(mensaje, icono = "fa-circle-check", color = "text-emerald-500") {
@@ -737,12 +706,12 @@
             msgEl.innerText = mensaje;
             iconEl.className = `fa-solid ${icono} ${color}`;
 
-            toast.classList.remove('-translate-y-24', 'opacity-0');
+            toast.classList.remove('-translate-y-28', 'opacity-0');
             toast.classList.add('translate-y-2', 'opacity-100');
 
             if (toastTimeout) clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => {
-                toast.classList.add('-translate-y-24', 'opacity-0');
+                toast.classList.add('-translate-y-28', 'opacity-0');
                 toast.classList.remove('translate-y-2', 'opacity-100');
             }, 2600);
         }
@@ -755,7 +724,6 @@
                 .replace(/[\u0300-\u036f]/g, "");
         }
 
-        // ================= PULL TO REFRESH CLARO Y VISIBLE =================
         let touchStartY = 0;
         let currentPull = 0;
         let isRefreshing = false;
@@ -831,7 +799,7 @@
         function formatearUrlImagen(url) {
             if (!url) return null;
             url = String(url).trim();
-            if (url.startsWith('data:image')) return url; // Retorna base64 directo
+            if (url.startsWith('data:image')) return url;
             if (!url.startsWith('http')) return null;
             if (url.includes("drive.google.com")) {
                 const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
@@ -842,7 +810,6 @@
             return url;
         }
 
-        // ================= COMPRESIÓN DE FOTO DE CÁMARA =================
         function capturarYProcesarFoto(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1039,10 +1006,8 @@
             if (mBajos) mBajos.innerText = bajos;
         }
 
-        // ================= NAVEGACIÓN FLUIDA (MÓVIL & DESKTOP) =================
         const TABS = ['verificar', 'inventario', 'registro'];
 
-        // Lanzador directo del escáner desde el botón principal del menú
         function ejecutarEscaneoMenu() {
             cambiarTab('verificar');
             abrirCamara('verificar');
@@ -1052,7 +1017,6 @@
             const targetIndex = TABS.indexOf(tab);
             if (targetIndex === -1) return;
 
-            // Actualizar pestañas y estados visuales
             TABS.forEach((t) => {
                 const vista = document.getElementById(`tab-${t}`);
                 const btnM = document.getElementById(`btn-tab-${t}`);
@@ -1081,7 +1045,6 @@
             if (tab === 'inventario') renderizarInventario();
         }
 
-        // ================= CÁMARA & ESCÁNER =================
         async function abrirCamara(destino) {
             destinoEscaneo = destino;
             flashlightOn = false;
@@ -1206,7 +1169,7 @@
                 return;
             }
             panel.innerHTML = encontrados.map(p => `
-                <button type="button" role="option" onclick="seleccionarResultadoBusqueda('${String(p.codigo).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" class="w-full flex items-center gap-3 text-left px-3.5 py-3 border-b border-slate-200/60 last:border-b-0 hover:bg-emerald-50/70 active:bg-emerald-100/70 transition-colors">
+                <button type="button" role="option" onclick="seleccionarResultadoBusqueda('${String(p.codigo).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')" class="w-full flex items-center gap-3 text-left px-3.5 py-3 border-b border-slate-200/60 last:border-b-0 hover:bg-emerald-50/70 active:bg-emerald-100/70 transition-colors cursor-pointer">
                     ${p.foto ? `<img src="${p.foto}" class="w-11 h-11 rounded-xl object-cover bg-slate-100 shrink-0" onerror="this.style.display='none'">` : `<span class="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 shrink-0"><i class="fa-solid fa-box"></i></span>`}
                     <span class="min-w-0 flex-1"><span class="block text-sm font-bold text-slate-800 truncate">${escaparTexto(p.nombre || 'Sin nombre')}</span><span class="block text-[11px] text-slate-500 font-mono truncate">${escaparTexto(p.codigo || '')}</span></span>
                     <span class="text-base font-black text-emerald-700 whitespace-nowrap">S/ ${Number(p.precio || 0).toFixed(2)}</span>
@@ -1300,11 +1263,28 @@
             }
         }
 
-        async function eliminarProducto(codigo) {
+        function confirmarEliminarProductoModal() {
+            const cod = document.getElementById('edit-codigo').value;
+            if (cod) pedirConfirmacionEliminar(cod);
+        }
+
+        function pedirConfirmacionEliminar(codigo) {
             const item = inventario[codigo];
             if (!item) return;
+            codigoAEliminarPendiente = codigo;
+            document.getElementById('confirmar-eliminar-nombre').innerText = item.nombre;
+            document.getElementById('modal-confirmar-eliminar').classList.remove('hidden');
+        }
 
-            if (!confirm(`¿Eliminar definitivamente "${item.nombre}"?`)) return;
+        function cerrarConfirmarEliminar() {
+            codigoAEliminarPendiente = null;
+            document.getElementById('modal-confirmar-eliminar').classList.add('hidden');
+        }
+
+        async function ejecutarEliminacionConfirmada() {
+            const codigo = codigoAEliminarPendiente;
+            if (!codigo) return;
+            cerrarConfirmarEliminar();
 
             delete inventario[codigo];
             localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
@@ -1324,11 +1304,6 @@
                 accion: "eliminarProducto",
                 codigo: codigo
             });
-        }
-
-        function eliminarProductoDesdeModal() {
-            const cod = document.getElementById('edit-codigo').value;
-            if (cod) eliminarProducto(cod);
         }
 
         function abrirModalEdicion(codigo) {
@@ -1462,7 +1437,6 @@
             cambiarTab('verificar');
         }
 
-        // ================= RENDERIZADO DE INVENTARIO (MÓVIL & ESCRITORIO) =================
         function renderizarInventario() {
             const listaM = document.getElementById('lista-inventario-mobile');
             const listaD = document.getElementById('lista-inventario-desktop');
@@ -1493,7 +1467,7 @@
                         <div class="glass-card p-3.5 rounded-2xl flex items-center justify-between gap-3 active:scale-[0.99] transition-transform">
                             ${item.foto ? `<img src="${item.foto}" class="w-12 h-12 rounded-xl object-cover border border-white/80 shadow-sm" onerror="this.remove()">` : '<div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-300 text-sm"><i class="fa-solid fa-box"></i></div>'}
                             
-                            <div class="flex-1 min-w-0" onclick="mostrarDetallesProducto('${cod}'); cambiarTab('verificar')">
+                            <div class="flex-1 min-w-0 cursor-pointer" onclick="mostrarDetallesProducto('${cod}'); cambiarTab('verificar')">
                                 <h4 class="font-black text-slate-900 text-sm truncate">${item.nombre}</h4>
                                 <div class="flex items-center gap-2 mt-0.5">
                                     <span class="text-[10px] font-mono text-slate-400 font-bold">${cod}</span>
@@ -1508,7 +1482,7 @@
                                     <i class="fa-solid fa-pen text-xs"></i>
                                 </button>
 
-                                <button onclick="eliminarProducto('${cod}')" class="w-8 h-8 rounded-xl bg-red-50 active:scale-90 border border-red-100 flex items-center justify-center text-red-500 shadow-sm cursor-pointer">
+                                <button onclick="pedirConfirmacionEliminar('${cod}')" class="w-8 h-8 rounded-xl bg-red-50 active:scale-90 border border-red-100 flex items-center justify-center text-red-500 shadow-sm cursor-pointer">
                                     <i class="fa-solid fa-trash-can text-xs"></i>
                                 </button>
                             </div>
@@ -1539,7 +1513,7 @@
                                     <button onclick="abrirModalEdicion('${cod}')" title="Editar" class="w-8 h-8 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-700 shadow-sm cursor-pointer">
                                         <i class="fa-solid fa-pen text-xs"></i>
                                     </button>
-                                    <button onclick="eliminarProducto('${cod}')" title="Eliminar" class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 flex items-center justify-center text-red-600 shadow-sm cursor-pointer">
+                                    <button onclick="pedirConfirmacionEliminar('${cod}')" title="Eliminar" class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 flex items-center justify-center text-red-600 shadow-sm cursor-pointer">
                                         <i class="fa-solid fa-trash-can text-xs"></i>
                                     </button>
                                 </div>
@@ -1551,8 +1525,8 @@
         }
 
         actualizarBadge();
-        renderizarInventario(); // Renderizado instantáneo de caché local (0 ms de espera)
-        cargarInventarioDesdeSheets(); // Sincronización en segundo plano con Sheets
+        renderizarInventario();
+        cargarInventarioDesdeSheets();
     </script>
 </body>
 </html>
