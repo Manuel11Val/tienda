@@ -1139,6 +1139,12 @@
             currentZoomLevel = 1.0;
             supportsHardwareZoom = false;
 
+            // Verificación previa de contexto seguro (HTTPS o localhost)
+            if (window.isSecureContext === false && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+                mostrarToast("La cámara requiere HTTPS o servidor web seguro", "fa-shield-halved", "text-rose-500");
+                return;
+            }
+
             const btnTorch = document.getElementById('btn-torch');
             if (btnTorch) btnTorch.classList.remove('bg-amber-400', 'text-slate-900');
 
@@ -1148,20 +1154,32 @@
                 btnZoom.classList.remove('bg-emerald-500', 'text-slate-900');
             }
 
+            // En iOS PWA es fundamental hacer visible el modal ANTES de pedir acceso a la cámara
             document.getElementById('modal-scanner').classList.remove('hidden');
 
-            // Configuración avanzada de escaneo: mayor área, aceleración nativa y todos los formatos de retail/ropa
+            // En iOS Standalone / WebApp forzamos la solicitud nativa primero para que salte el diálogo de permiso
+            try {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    const tempStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: { ideal: "environment" } }
+                    });
+                    // Liberamos el stream temporal de prueba de inmediato para que lo tome el lector óptico
+                    tempStream.getTracks().forEach(track => track.stop());
+                }
+            } catch (permErr) {
+                console.warn("Validación de permiso previa:", permErr);
+            }
+
             const config = {
                 fps: 24,
                 qrbox: function(viewfinderWidth, viewfinderHeight) {
-                    // Área panorámica adaptable para no cortar códigos largos (Code 128 / ITF)
                     const w = Math.floor(viewfinderWidth * 0.90);
                     const h = Math.floor(Math.max(160, viewfinderHeight * 0.58));
                     return { width: Math.min(w, 360), height: Math.min(h, 240) };
                 },
                 aspectRatio: 1.0,
                 experimentalFeatures: {
-                    useBarCodeDetectorIfSupported: true // Activa el chip de reconocimiento nativo de Android/iOS
+                    useBarCodeDetectorIfSupported: true
                 },
                 formatsToSupport: [
                     Html5QrcodeSupportedFormats.EAN_13,
@@ -1169,40 +1187,49 @@
                     Html5QrcodeSupportedFormats.UPC_A,
                     Html5QrcodeSupportedFormats.UPC_E,
                     Html5QrcodeSupportedFormats.CODE_128,
-                    Html5QrcodeSupportedFormats.CODE_39,    // Muy común en ropa, textiles y calzado
+                    Html5QrcodeSupportedFormats.CODE_39,
                     Html5QrcodeSupportedFormats.CODE_93,
-                    Html5QrcodeSupportedFormats.ITF,        // Clave en cajas, fardos de gaseosas y empaques grandes
+                    Html5QrcodeSupportedFormats.ITF,
                     Html5QrcodeSupportedFormats.CODABAR,
                     Html5QrcodeSupportedFormats.DATA_MATRIX,
                     Html5QrcodeSupportedFormats.QR_CODE
                 ]
             };
 
-            // Solicitud de alta resolución para enfocar barras finas con nitidez
-            const cameraConstraints = {
-                facingMode: { ideal: "environment" },
-                width: { min: 1280, ideal: 1920 },
-                height: { min: 720, ideal: 1080 }
-            };
-
             try {
                 if (html5QrCode) {
-                    await html5QrCode.stop().catch(() => {});
+                    try { await html5QrCode.stop(); } catch (e) {}
                     html5QrCode = null;
                 }
                 html5QrCode = new Html5Qrcode("scanner-view");
 
+                // Configuración compatible sin restricciones rígidas para evitar OverconstrainedError
+                const primaryConstraints = {
+                    facingMode: { ideal: "environment" }
+                };
+
                 try {
-                    await html5QrCode.start(cameraConstraints, config, onScanSuccess, () => {});
-                } catch (resErr) {
-                    // Si el sensor no soporta las restricciones ideales, inicia en modo automático
+                    await html5QrCode.start(primaryConstraints, config, onScanSuccess, () => {});
+                } catch (firstErr) {
+                    console.warn("Intento con facingMode ideal falló, intentando fallback simple:", firstErr);
+                    // Fallback directo a cámara trasera básica o cualquier cámara disponible
                     await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
                 }
 
-                // Detectar si la lente del teléfono tiene soporte para zoom óptico/digital
                 verificarSoporteZoom();
             } catch (err) {
-                mostrarToast("Verifica permisos de cámara", "fa-triangle-exclamation", "text-rose-500");
+                console.error("Error al inicializar cámara:", err);
+                const nombreError = err && err.name ? err.name : String(err);
+                
+                if (nombreError.includes("NotAllowedError") || nombreError.includes("PermissionDeniedError")) {
+                    mostrarToast("Permiso denegado. Habilita la cámara en los Ajustes del iPhone", "fa-lock", "text-amber-500");
+                } else if (nombreError.includes("NotFoundError") || nombreError.includes("DevicesNotFoundError")) {
+                    mostrarToast("No se detectó ninguna cámara disponible", "fa-video-slash", "text-rose-500");
+                } else if (window.isSecureContext === false) {
+                    mostrarToast("Abre la web mediante HTTPS para activar la cámara", "fa-lock", "text-rose-500");
+                } else {
+                    mostrarToast("Error al abrir cámara: " + (err.message || nombreError), "fa-triangle-exclamation", "text-rose-500");
+                }
                 cerrarCamara();
             }
         }
