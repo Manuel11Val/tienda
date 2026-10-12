@@ -646,18 +646,18 @@
         <div class="glass-modal rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 max-w-sm w-full space-y-4 border border-white shadow-2xl relative my-auto">
             
             <!-- Contenedor exacto para captura en imagen PNG (Tipografía y espaciado optimizados para evitar recortes) -->
-            <div id="ticket-card-exportable" class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 space-y-3.5 shadow-sm" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; letter-spacing: 0px;">
-                <div class="text-center space-y-1">
+            <div id="ticket-card-exportable" class="bg-white rounded-3xl p-6 border border-slate-200 space-y-4 shadow-sm" style="font-family: Arial, Helvetica, sans-serif !important; letter-spacing: 0px !important;">
+                <div class="text-center space-y-1.5 pb-1">
                     <div id="ticket-badge-icono" class="w-12 h-12 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center mx-auto text-xl shadow-inner border border-emerald-500/20">
                         <i class="fa-solid fa-circle-check"></i>
                     </div>
-                    <span id="ticket-badge-estado" class="inline-block text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full">¡Venta Exitosa!</span>
-                    <div id="ticket-gran-monto" class="text-3xl font-black text-slate-900 tracking-tight mt-1" style="line-height: 1.3;">S/ 0.00</div>
-                    <p class="text-[11px] font-black text-slate-600 tracking-tight">Bodega & Ropa</p>
-                    <p id="ticket-subtitulo-fecha" class="text-[9px] font-semibold text-slate-400"></p>
+                    <span id="ticket-badge-estado" class="inline-block text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-full">¡Venta Exitosa!</span>
+                    <div id="ticket-gran-monto" class="text-3xl font-extrabold text-slate-900 tracking-normal pt-1 pb-0.5" style="line-height: 1.35;">S/ 0.00</div>
+                    <p class="text-xs font-bold text-slate-700 tracking-normal m-0 p-0">Bodega & Ropa</p>
+                    <p id="ticket-subtitulo-fecha" class="text-[10px] font-semibold text-slate-400 m-0 p-0"></p>
                 </div>
 
-                <div id="ticket-cuerpo" class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 space-y-2 text-xs"></div>
+                <div id="ticket-cuerpo" class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 space-y-2.5 text-xs"></div>
             </div>
 
             <div class="space-y-2 pt-1">
@@ -1240,7 +1240,6 @@
         // ================= SINCRONIZACIÓN DE VENTAS DESDE SHEETS =================
         function normalizarCadenaFecha(fStr) {
             if (!fStr) return '';
-            // Si viene como Date string largo o ISO, extraer YYYY-MM-DD o DD/MM/YYYY
             const str = String(fStr).trim();
             if (str.includes('/')) {
                 const parts = str.split('/');
@@ -1304,7 +1303,6 @@
                         if (!mapById.has(v.id)) {
                             mapById.set(v.id, v);
                         } else {
-                            // Si localmente estaba anulada, conservar anulada
                             const cloud = mapById.get(v.id);
                             if (v.estado === 'ANULADA') cloud.estado = 'ANULADA';
                         }
@@ -1853,7 +1851,7 @@
             localStorage.setItem('bodega_historial_ventas', JSON.stringify(historialVentas));
             localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
 
-            // 3. Enviar registro de venta a Sheets (Pestaña Ventas)
+            // 3. Enviar registro de venta a Sheets (Con nombres y códigos separados)
             enviarSheets({
                 accion: "registrarVenta",
                 venta: {
@@ -1863,7 +1861,8 @@
                     total: nuevaVenta.total,
                     ganancia: nuevaVenta.ganancia,
                     metodoPago: nuevaVenta.metodoPago,
-                    detalle: nuevaVenta.items.map(i => `${i.nombre} (x${i.cantidad})`).join(', ')
+                    detalle: nuevaVenta.items.map(i => `${i.nombre} (x${i.cantidad})`).join(', '),
+                    codigos: nuevaVenta.items.map(i => `${i.codigo || 'SIN-CODIGO'} (x${i.cantidad})`).join(', ')
                 }
             });
 
@@ -1883,13 +1882,14 @@
         }
 
         function abrirModalTicket(venta) {
+            ultimoTicketEmitido = venta;
             const montoEl = document.getElementById('ticket-gran-monto');
             const badgeIcon = document.getElementById('ticket-badge-icono');
             const badgeEstado = document.getElementById('ticket-badge-estado');
             const subFecha = document.getElementById('ticket-subtitulo-fecha');
             const cuerpo = document.getElementById('ticket-cuerpo');
 
-            if (montoEl) montoEl.innerText = `S/ ${venta.total.toFixed(2)}`;
+            if (montoEl) montoEl.innerText = `S/ ${Number(venta.total).toFixed(2)}`;
             if (subFecha) subFecha.innerText = `${venta.fecha} • ${venta.hora}`;
 
             if (venta.metodoPago === 'Yape') {
@@ -1899,7 +1899,7 @@
                 }
                 if (badgeEstado) {
                     badgeEstado.innerText = "¡Yape Recibido!";
-                    badgeEstado.className = "inline-block text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-100/90 px-2.5 py-0.5 rounded-full";
+                    badgeEstado.className = "inline-block text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-100/90 px-3 py-1 rounded-full";
                 }
             } else if (venta.metodoPago === 'Tarjeta') {
                 if (badgeIcon) {
@@ -1908,7 +1908,7 @@
                 }
                 if (badgeEstado) {
                     badgeEstado.innerText = "¡Pago con Tarjeta!";
-                    badgeEstado.className = "inline-block text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-100/90 px-2.5 py-0.5 rounded-full";
+                    badgeEstado.className = "inline-block text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100/90 px-3 py-1 rounded-full";
                 }
             } else {
                 if (badgeIcon) {
@@ -1917,39 +1917,39 @@
                 }
                 if (badgeEstado) {
                     badgeEstado.innerText = "¡Pago en Efectivo!";
-                    badgeEstado.className = "inline-block text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full";
+                    badgeEstado.className = "inline-block text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-full";
                 }
             }
 
-            let itemsHtml = venta.items.map(it => `
-                <div class="flex justify-between items-center py-1.5 border-b border-slate-200/60 last:border-b-0" style="line-height: 1.4;">
-                    <div class="min-w-0 pr-2">
-                        <span class="font-bold text-slate-800 block truncate text-[11px]" style="line-height: 1.4; letter-spacing: 0;">${it.nombre}</span>
-                        <span class="text-[10px] text-slate-400 font-semibold" style="line-height: 1.3;">${it.cantidad}x S/ ${it.precio.toFixed(2)}</span>
+            let itemsHtml = (venta.items || []).map(it => `
+                <div class="flex justify-between items-center py-1.5 border-b border-slate-200/70 last:border-b-0" style="padding-top: 5px; padding-bottom: 5px;">
+                    <div class="min-w-0 pr-3">
+                        <div class="font-bold text-slate-800 text-[12px] truncate" style="line-height: 1.6; letter-spacing: 0px; padding-top: 2px;">${it.nombre}</div>
+                        <div class="text-[10px] text-slate-500 font-semibold" style="line-height: 1.4;">${it.cantidad}x S/ ${Number(it.precio || 0).toFixed(2)}</div>
                     </div>
-                    <span class="font-black text-slate-900 text-xs shrink-0" style="line-height: 1.4; letter-spacing: 0;">S/ ${(it.precio * it.cantidad).toFixed(2)}</span>
+                    <div class="font-extrabold text-slate-900 text-xs shrink-0" style="line-height: 1.6; letter-spacing: 0px;">S/ ${(Number(it.precio || 0) * Number(it.cantidad || 1)).toFixed(2)}</div>
                 </div>
             `).join('');
 
             cuerpo.innerHTML = `
-                <div class="flex justify-between items-center text-[11px] pb-1 border-b border-slate-200/60 font-semibold text-slate-500">
+                <div class="flex justify-between items-center text-[11px] pb-1.5 border-b border-slate-200/60 font-semibold text-slate-500" style="line-height: 1.5;">
                     <span>N° de Operación</span>
                     <span class="font-mono font-bold text-slate-800">${venta.id}</span>
                 </div>
-                <div class="flex justify-between items-center text-[11px] pb-1 border-b border-slate-200/60 font-semibold text-slate-500">
+                <div class="flex justify-between items-center text-[11px] pb-1.5 border-b border-slate-200/60 font-semibold text-slate-500" style="line-height: 1.5;">
                     <span>Método de pago</span>
-                    <span class="font-black ${venta.metodoPago === 'Yape' ? 'text-purple-700' : (venta.metodoPago === 'Tarjeta' ? 'text-blue-700' : 'text-emerald-700')}">${venta.metodoPago}</span>
+                    <span class="font-bold ${venta.metodoPago === 'Yape' ? 'text-purple-700' : (venta.metodoPago === 'Tarjeta' ? 'text-blue-700' : 'text-emerald-700')}">${venta.metodoPago}</span>
                 </div>
 
                 <div class="pt-1 space-y-0.5">
-                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block mb-1">Detalle de Artículos</span>
+                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Detalle de Artículos</span>
                     ${itemsHtml}
                 </div>
 
                 ${venta.metodoPago === 'Efectivo' && venta.pagaCon > venta.total ? `
-                <div class="border-t border-slate-200/60 pt-1.5 flex justify-between text-[11px] font-bold text-slate-600">
-                    <span>Pagó con: S/ ${venta.pagaCon.toFixed(2)}</span>
-                    <span class="text-emerald-700 font-black">Vuelto: S/ ${venta.vuelto.toFixed(2)}</span>
+                <div class="border-t border-slate-200/60 pt-2 flex justify-between text-[11px] font-bold text-slate-600" style="line-height: 1.5;">
+                    <span>Pagó con: S/ ${Number(venta.pagaCon).toFixed(2)}</span>
+                    <span class="text-emerald-700 font-extrabold">Vuelto: S/ ${Number(venta.vuelto || 0).toFixed(2)}</span>
                 </div>` : ''}
             `;
 
@@ -1968,16 +1968,16 @@
                 onclone: (clonedDoc) => {
                     const el = clonedDoc.getElementById('ticket-card-exportable');
                     if (el) {
-                        // Normalizar tipografía y eliminar espaciados negativos que cortan las letras
-                        el.style.fontFamily = "Arial, Helvetica, sans-serif";
+                        el.style.fontFamily = "Arial, sans-serif";
                         el.style.letterSpacing = "0px";
                         el.style.transform = "none";
                         el.style.boxShadow = "none";
+
                         const allNodes = el.querySelectorAll('*');
                         allNodes.forEach(node => {
                             node.style.letterSpacing = "0px";
-                            if (node.tagName === 'SPAN' || node.tagName === 'P' || node.tagName === 'DIV') {
-                                node.style.lineHeight = "1.45";
+                            if (node.tagName === 'DIV' || node.tagName === 'SPAN' || node.tagName === 'P') {
+                                node.style.lineHeight = "1.55";
                             }
                         });
                     }
@@ -2009,11 +2009,11 @@
                     await navigator.share({
                         files: [file],
                         title: `Voucher #${ultimoTicketEmitido.id} - Bodega & Ropa`,
-                        text: `Comprobante de compra #${ultimoTicketEmitido.id} (S/ ${ultimoTicketEmitido.total.toFixed(2)})`
+                        text: `Comprobante de compra #${ultimoTicketEmitido.id} (S/ ${Number(ultimoTicketEmitido.total).toFixed(2)})`
                     });
                     mostrarToast("Voucher compartido", "fa-circle-check", "text-emerald-600");
                 } else {
-                    // 2. En computadora: Intentar copiar imagen al portapapeles (Ctrl+V) y descargar respaldo
+                    // 2. En computadora: Copiar imagen al portapapeles y descargar respaldo
                     let copiado = false;
                     try {
                         if (navigator.clipboard && window.ClipboardItem) {
@@ -2075,18 +2075,18 @@
 
             let msg = `*VOUCHER DE VENTA - BODEGA & ROPA* ✅\n`;
             msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
-            msg += `*Monto Total:* S/ ${v.total.toFixed(2)}\n`;
+            msg += `*Monto Total:* S/ ${Number(v.total).toFixed(2)}\n`;
             msg += `*Operación:* ${v.id}\n`;
             msg += `*Fecha:* ${v.fecha} - ${v.hora}\n`;
             msg += `*Método:* ${emojiPago} ${v.metodoPago}\n`;
             msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
             msg += `*Artículos:*\n`;
-            v.items.forEach(i => {
-                msg += `• ${i.nombre} (${i.cantidad} un.) = S/ ${(i.precio * i.cantidad).toFixed(2)}\n`;
+            (v.items || []).forEach(i => {
+                msg += `• ${i.nombre} (${i.cantidad} un.) = S/ ${(Number(i.precio || 0) * Number(i.cantidad || 1)).toFixed(2)}\n`;
             });
             if (v.metodoPago === 'Efectivo' && v.vuelto > 0) {
                 msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
-                msg += `Pagó con: S/ ${v.pagaCon.toFixed(2)} | *Vuelto: S/ ${v.vuelto.toFixed(2)}*\n`;
+                msg += `Pagó con: S/ ${Number(v.pagaCon).toFixed(2)} | *Vuelto: S/ ${Number(v.vuelto).toFixed(2)}*\n`;
             }
             msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
             msg += `¡Muchas gracias por su preferencia! ✨`;
@@ -2103,13 +2103,13 @@
             const ventasHoy = historialVentas.filter(v => esFechaDeHoy(v.fecha));
             const ventasValidasHoy = ventasHoy.filter(v => v.estado !== 'ANULADA');
 
-            const totalRecaudado = ventasValidasHoy.reduce((acc, v) => acc + v.total, 0);
-            const totalGanancia = ventasValidasHoy.reduce((acc, v) => acc + (v.ganancia || 0), 0);
-            const totalArticulos = ventasValidasHoy.reduce((acc, v) => acc + v.items.reduce((a, i) => a + i.cantidad, 0), 0);
+            const totalRecaudado = ventasValidasHoy.reduce((acc, v) => acc + Number(v.total || 0), 0);
+            const totalGanancia = ventasValidasHoy.reduce((acc, v) => acc + Number(v.ganancia || 0), 0);
+            const totalArticulos = ventasValidasHoy.reduce((acc, v) => acc + (v.items || []).reduce((a, i) => a + Number(i.cantidad || 0), 0), 0);
 
-            const pagoEfectivo = ventasValidasHoy.filter(v => v.metodoPago === 'Efectivo').reduce((acc, v) => acc + v.total, 0);
-            const pagoYape = ventasValidasHoy.filter(v => v.metodoPago === 'Yape').reduce((acc, v) => acc + v.total, 0);
-            const pagoTarjeta = ventasValidasHoy.filter(v => v.metodoPago === 'Tarjeta').reduce((acc, v) => acc + v.total, 0);
+            const pagoEfectivo = ventasValidasHoy.filter(v => v.metodoPago === 'Efectivo').reduce((acc, v) => acc + Number(v.total || 0), 0);
+            const pagoYape = ventasValidasHoy.filter(v => v.metodoPago === 'Yape').reduce((acc, v) => acc + Number(v.total || 0), 0);
+            const pagoTarjeta = ventasValidasHoy.filter(v => v.metodoPago === 'Tarjeta').reduce((acc, v) => acc + Number(v.total || 0), 0);
 
             document.getElementById('caja-total-recaudado').innerText = `S/ ${totalRecaudado.toFixed(2)}`;
             document.getElementById('caja-total-tickets').innerText = ventasValidasHoy.length;
@@ -2135,29 +2135,33 @@
 
             lista.innerHTML = ventasHoy.map(v => {
                 const esAnulada = v.estado === 'ANULADA';
+                const detalleTexto = (v.items || []).map(it => `${it.nombre} x${it.cantidad}`).join(', ') || v.detalle || 'Venta';
+
                 return `
-                <div class="glass-card p-3 rounded-2xl flex items-center justify-between gap-3 border ${esAnulada ? 'border-rose-200/80 bg-rose-50/40 opacity-70' : 'border-white'}">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <span class="w-8 h-8 rounded-xl ${esAnulada ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-800'} flex items-center justify-center text-xs font-black">
+                <div class="glass-card p-3 rounded-2xl flex items-center justify-between gap-3 border transition-all ${esAnulada ? 'border-rose-200/80 bg-rose-50/40 opacity-70' : 'border-white hover:bg-emerald-50/30'}">
+                    <!-- Área clickeable para abrir el detalle y voucher de la venta -->
+                    <div class="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer" onclick="verDetalleVentaHistorial('${v.id}')" title="Toca para ver o reenviar comprobante">
+                        <span class="w-8 h-8 rounded-xl ${esAnulada ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-800'} flex items-center justify-center text-xs font-black shrink-0">
                             <i class="fa-solid ${esAnulada ? 'fa-ban' : 'fa-receipt'}"></i>
                         </span>
                         <div class="min-w-0">
                             <div class="flex items-center gap-1.5">
                                 <h5 class="text-xs font-black ${esAnulada ? 'line-through text-slate-500' : 'text-slate-900'} truncate">Venta #${v.id} (${v.hora})</h5>
-                                ${esAnulada ? '<span class="text-[8px] font-black uppercase text-rose-700 bg-rose-100 px-1.5 py-0.2 rounded">Anulada</span>' : ''}
+                                ${esAnulada ? '<span class="text-[8px] font-black uppercase text-rose-700 bg-rose-100 px-1.5 py-0.2 rounded">Anulada</span>' : '<span class="text-[8px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded">Ver ticket</span>'}
                             </div>
-                            <p class="text-[10px] text-slate-500 truncate font-medium">
-                                ${v.items.map(it => `${it.nombre} x${it.cantidad}`).join(', ')}
+                            <p class="text-[10px] text-slate-500 truncate font-medium mt-0.5">
+                                ${detalleTexto}
                             </p>
                         </div>
                     </div>
+
                     <div class="flex items-center gap-2 shrink-0">
-                        <div class="text-right">
-                            <span class="text-sm font-black ${esAnulada ? 'line-through text-slate-400' : 'text-emerald-800'} block">S/ ${v.total.toFixed(2)}</span>
+                        <div class="text-right cursor-pointer" onclick="verDetalleVentaHistorial('${v.id}')">
+                            <span class="text-sm font-black ${esAnulada ? 'line-through text-slate-400' : 'text-emerald-800'} block">S/ ${Number(v.total).toFixed(2)}</span>
                             <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">${v.metodoPago}</span>
                         </div>
                         ${!esAnulada ? `
-                        <button onclick="abrirModalAnularVenta('${v.id}')" title="Anular venta y reponer stock" class="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200/80 text-rose-600 flex items-center justify-center text-xs cursor-pointer active:scale-90 transition-transform">
+                        <button onclick="event.stopPropagation(); abrirModalAnularVenta('${v.id}')" title="Anular venta y reponer stock" class="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200/80 text-rose-600 flex items-center justify-center text-xs cursor-pointer active:scale-90 transition-transform">
                             <i class="fa-solid fa-rotate-left"></i>
                         </button>` : ''}
                     </div>
@@ -2166,15 +2170,20 @@
             }).join('');
         }
 
-        // ================= GESTIÓN DE ANULACIÓN DE VENTAS =================
+        function verDetalleVentaHistorial(ticketId) {
+            const v = historialVentas.find(x => x.id === ticketId);
+            if (!v) return;
+            abrirModalTicket(v);
+        }
+
         function abrirModalAnularVenta(ticketId) {
             const v = historialVentas.find(x => x.id === ticketId);
             if (!v) return;
             ventaAAnularPendiente = v;
 
-            document.getElementById('anular-venta-subtitulo').innerText = `Operación #${v.id} • Monto: S/ ${v.total.toFixed(2)}`;
+            document.getElementById('anular-venta-subtitulo').innerText = `Operación #${v.id} • Monto: S/ ${Number(v.total).toFixed(2)}`;
             const contenedorItems = document.getElementById('anular-venta-detalle-items');
-            contenedorItems.innerHTML = v.items.map(it => `<div>• ${it.nombre} <b class="text-emerald-700">(+${it.cantidad} un.)</b></div>`).join('');
+            contenedorItems.innerHTML = (v.items || []).map(it => `<div>• ${it.nombre} <b class="text-emerald-700">(+${it.cantidad} un.)</b></div>`).join('');
 
             document.getElementById('modal-anular-venta').classList.remove('hidden');
         }
@@ -2194,8 +2203,7 @@
             localStorage.setItem('bodega_historial_ventas', JSON.stringify(historialVentas));
 
             // 2. Reponer stock de los productos vendidos
-            venta.items.forEach(it => {
-                // Buscar producto por código o por nombre coincidente
+            (venta.items || []).forEach(it => {
                 let producto = null;
                 if (it.codigo && inventario[it.codigo]) {
                     producto = inventario[it.codigo];
@@ -2249,12 +2257,13 @@
 
         function exportarReporteVentas() {
             const hoy = new Date().toLocaleDateString('es-PE');
-            const ventasHoy = historialVentas.filter(v => v.fecha === hoy);
-            const total = ventasHoy.reduce((acc, v) => acc + v.total, 0);
+            const ventasHoy = historialVentas.filter(v => esFechaDeHoy(v.fecha));
+            const ventasValidas = ventasHoy.filter(v => v.estado !== 'ANULADA');
+            const total = ventasValidas.reduce((acc, v) => acc + Number(v.total || 0), 0);
 
-            let txt = `*CIERRE DE CAJA DIARIO - MI TIENDA*\nFecha: ${hoy}\nTotal Recaudado: S/ ${total.toFixed(2)}\nVentas: ${ventasHoy.length}\n------------------\n`;
-            ventasHoy.forEach(v => {
-                txt += `#${v.id} (${v.hora}) - S/ ${v.total.toFixed(2)} [${v.metodoPago}]\n`;
+            let txt = `*CIERRE DE CAJA DIARIO - MI TIENDA*\nFecha: ${hoy}\nTotal Recaudado: S/ ${total.toFixed(2)}\nVentas: ${ventasValidas.length}\n------------------\n`;
+            ventasValidas.forEach(v => {
+                txt += `#${v.id} (${v.hora}) - S/ ${Number(v.total).toFixed(2)} [${v.metodoPago}]\n`;
             });
 
             const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
@@ -2641,7 +2650,6 @@
             }, { passive: true });
         })();
 
-        // Arranque inicial del sistema
         actualizarBadge();
         actualizarIndicadorCola();
         procesarColaSync();
