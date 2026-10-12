@@ -513,6 +513,38 @@
 
     </main>
 
+    <!-- ================= MODAL ANULAR / CANCELAR VENTA ================= -->
+    <div id="modal-anular-venta" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-modal rounded-3xl p-5 max-w-sm w-full space-y-3.5 border border-white shadow-2xl">
+            <div class="text-center space-y-1">
+                <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto text-xl shadow-xs">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </div>
+                <h4 class="font-black text-slate-900 text-base">¿Anular esta venta?</h4>
+                <p id="anular-venta-subtitulo" class="text-xs text-slate-500 font-semibold"></p>
+            </div>
+
+            <div class="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-3 text-xs space-y-1.5">
+                <div class="font-black text-amber-900 flex items-center gap-1.5">
+                    <i class="fa-solid fa-boxes-stacked"></i> Reposición automática de stock:
+                </div>
+                <div id="anular-venta-detalle-items" class="text-slate-600 font-medium pl-1 text-[11px] space-y-0.5"></div>
+                <p class="text-[10px] text-amber-800 font-bold pt-1 border-t border-amber-200/60">
+                    * El monto se restará del total de caja y la venta quedará registrada como anulada.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="cerrarModalAnularVenta()" class="py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold active:scale-95 transition-all cursor-pointer">
+                    Cancelar
+                </button>
+                <button onclick="ejecutarAnulacionVentaConfirmada()" class="py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black active:scale-95 transition-all cursor-pointer shadow-xs">
+                    Sí, Anular Venta
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ================= MODAL DEL CARRITO DE COMPRA ================= -->
     <div id="modal-carrito" class="fixed inset-0 bg-slate-950/45 backdrop-blur-md z-50 hidden flex flex-col justify-end lg:justify-center p-0 lg:p-6 transition-opacity duration-300">
         <div class="glass-modal rounded-t-[36px] lg:rounded-[32px] p-5 sm:p-6 max-w-lg mx-auto w-full space-y-3.5 max-h-[92vh] flex flex-col shadow-2xl border border-white">
@@ -613,14 +645,14 @@
     <div id="modal-ticket" class="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="glass-modal rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 max-w-sm w-full space-y-4 border border-white shadow-2xl relative my-auto">
             
-            <!-- Contenedor exacto para captura en imagen PNG -->
-            <div id="ticket-card-exportable" class="bg-white rounded-3xl p-5 border border-slate-200 space-y-3.5 shadow-sm">
+            <!-- Contenedor exacto para captura en imagen PNG (Tipografía y espaciado optimizados para evitar recortes) -->
+            <div id="ticket-card-exportable" class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 space-y-3.5 shadow-sm" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; letter-spacing: 0px;">
                 <div class="text-center space-y-1">
                     <div id="ticket-badge-icono" class="w-12 h-12 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center mx-auto text-xl shadow-inner border border-emerald-500/20">
                         <i class="fa-solid fa-circle-check"></i>
                     </div>
                     <span id="ticket-badge-estado" class="inline-block text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full">¡Venta Exitosa!</span>
-                    <div id="ticket-gran-monto" class="text-3xl font-black text-slate-900 tracking-tight mt-1">S/ 0.00</div>
+                    <div id="ticket-gran-monto" class="text-3xl font-black text-slate-900 tracking-tight mt-1" style="line-height: 1.3;">S/ 0.00</div>
                     <p class="text-[11px] font-black text-slate-600 tracking-tight">Bodega & Ropa</p>
                     <p id="ticket-subtitulo-fecha" class="text-[9px] font-semibold text-slate-400"></p>
                 </div>
@@ -901,6 +933,7 @@
         let metodoPagoActual = 'Efectivo';
         let historialVentas = JSON.parse(localStorage.getItem('bodega_historial_ventas')) || [];
         let ultimoTicketEmitido = null;
+        let ventaAAnularPendiente = null;
 
         let toastTimeout = null;
         function mostrarToast(mensaje, icono = "fa-circle-check", color = "text-emerald-600") {
@@ -1126,6 +1159,7 @@
             mostrarToast("Conexión restablecida", "fa-wifi", "text-emerald-600");
             procesarColaSync();
             cargarInventarioDesdeSheets();
+            cargarVentasDesdeSheets();
         });
 
         function coincideBusquedaFlexible(item, textoBusqueda) {
@@ -1200,6 +1234,88 @@
                 actualizarBadge();
             } finally {
                 if (refreshIcon) refreshIcon.classList.remove('fa-spin', 'text-emerald-700');
+            }
+        }
+
+        // ================= SINCRONIZACIÓN DE VENTAS DESDE SHEETS =================
+        function normalizarCadenaFecha(fStr) {
+            if (!fStr) return '';
+            // Si viene como Date string largo o ISO, extraer YYYY-MM-DD o DD/MM/YYYY
+            const str = String(fStr).trim();
+            if (str.includes('/')) {
+                const parts = str.split('/');
+                if (parts.length === 3) {
+                    const d = parts[0].padStart(2, '0');
+                    const m = parts[1].padStart(2, '0');
+                    let y = parts[2];
+                    if (y.length === 2) y = '20' + y;
+                    return `${d}/${m}/${y}`;
+                }
+            } else if (str.includes('-')) {
+                const parts = str.split('T')[0].split('-');
+                if (parts.length === 3) {
+                    if (parts[0].length === 4) {
+                        return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
+                    }
+                }
+            }
+            return str;
+        }
+
+        function esFechaDeHoy(fStr) {
+            const normalizada = normalizarCadenaFecha(fStr);
+            const hoy = normalizarCadenaFecha(new Date().toLocaleDateString('es-PE'));
+            return normalizada === hoy;
+        }
+
+        async function cargarVentasDesdeSheets() {
+            try {
+                const response = await fetch(`${API_URL}?tipo=ventas`);
+                const ventasCloud = await response.json();
+                if (Array.isArray(ventasCloud) && ventasCloud.length > 0) {
+                    const ventasMapeadas = ventasCloud.map(v => {
+                        const items = (v.detalle || '').split(',').map(part => {
+                            const match = part.trim().match(/^(.*?)\s*\(x(\d+)\)$/);
+                            if (match) {
+                                return { nombre: match[1], cantidad: parseInt(match[2]), precio: 0 };
+                            }
+                            return { nombre: part.trim(), cantidad: 1, precio: 0 };
+                        }).filter(it => it.nombre);
+
+                        return {
+                            id: String(v.id || '').replace(/^'/, ''),
+                            fecha: normalizarCadenaFecha(v.fecha),
+                            hora: v.hora || '',
+                            total: Number(v.total || 0),
+                            ganancia: Number(v.ganancia || 0),
+                            metodoPago: v.metodoPago || 'Efectivo',
+                            detalle: v.detalle || '',
+                            estado: v.estado || 'Completada',
+                            items: items.length ? items : [{ nombre: v.detalle || 'Venta', cantidad: 1, precio: Number(v.total || 0) }],
+                            pagaCon: Number(v.total || 0),
+                            vuelto: 0
+                        };
+                    });
+
+                    // Fusionar manteniendo el estado más reciente y evitando duplicados
+                    const mapById = new Map();
+                    ventasMapeadas.forEach(v => mapById.set(v.id, v));
+                    historialVentas.forEach(v => {
+                        if (!mapById.has(v.id)) {
+                            mapById.set(v.id, v);
+                        } else {
+                            // Si localmente estaba anulada, conservar anulada
+                            const cloud = mapById.get(v.id);
+                            if (v.estado === 'ANULADA') cloud.estado = 'ANULADA';
+                        }
+                    });
+
+                    historialVentas = Array.from(mapById.values());
+                    localStorage.setItem('bodega_historial_ventas', JSON.stringify(historialVentas));
+                    renderizarCajaYHistorial();
+                }
+            } catch (err) {
+                console.warn("No se pudieron consultar las ventas desde Sheets:", err);
             }
         }
 
@@ -1708,13 +1824,14 @@
 
             const nuevaVenta = {
                 id: ticketId,
-                fecha: ahora.toLocaleDateString('es-PE'),
+                fecha: normalizarCadenaFecha(ahora.toLocaleDateString('es-PE')),
                 hora: ahora.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
                 items: JSON.parse(JSON.stringify(carrito)),
                 total: total,
                 costoTotal: costoTotal,
                 ganancia: ganancia,
                 metodoPago: metodoPagoActual,
+                estado: 'Completada',
                 pagaCon: pagaCon,
                 vuelto: vuelto
             };
@@ -1805,12 +1922,12 @@
             }
 
             let itemsHtml = venta.items.map(it => `
-                <div class="flex justify-between items-center py-1 border-b border-slate-200/60 last:border-b-0">
+                <div class="flex justify-between items-center py-1.5 border-b border-slate-200/60 last:border-b-0" style="line-height: 1.4;">
                     <div class="min-w-0 pr-2">
-                        <span class="font-bold text-slate-800 block truncate text-[11px]">${it.nombre}</span>
-                        <span class="text-[10px] text-slate-400 font-semibold">${it.cantidad}x S/ ${it.precio.toFixed(2)}</span>
+                        <span class="font-bold text-slate-800 block truncate text-[11px]" style="line-height: 1.4; letter-spacing: 0;">${it.nombre}</span>
+                        <span class="text-[10px] text-slate-400 font-semibold" style="line-height: 1.3;">${it.cantidad}x S/ ${it.precio.toFixed(2)}</span>
                     </div>
-                    <span class="font-black text-slate-900 text-xs shrink-0">S/ ${(it.precio * it.cantidad).toFixed(2)}</span>
+                    <span class="font-black text-slate-900 text-xs shrink-0" style="line-height: 1.4; letter-spacing: 0;">S/ ${(it.precio * it.cantidad).toFixed(2)}</span>
                 </div>
             `).join('');
 
@@ -1847,7 +1964,24 @@
                 scale: 3, // Calidad nítida HD
                 backgroundColor: '#ffffff',
                 useCORS: true,
-                logging: false
+                logging: false,
+                onclone: (clonedDoc) => {
+                    const el = clonedDoc.getElementById('ticket-card-exportable');
+                    if (el) {
+                        // Normalizar tipografía y eliminar espaciados negativos que cortan las letras
+                        el.style.fontFamily = "Arial, Helvetica, sans-serif";
+                        el.style.letterSpacing = "0px";
+                        el.style.transform = "none";
+                        el.style.boxShadow = "none";
+                        const allNodes = el.querySelectorAll('*');
+                        allNodes.forEach(node => {
+                            node.style.letterSpacing = "0px";
+                            if (node.tagName === 'SPAN' || node.tagName === 'P' || node.tagName === 'DIV') {
+                                node.style.lineHeight = "1.45";
+                            }
+                        });
+                    }
+                }
             });
 
             return new Promise((resolve) => {
@@ -1870,20 +2004,38 @@
                 const fileName = `Voucher-${ultimoTicketEmitido.id}.png`;
                 const file = new File([blob], fileName, { type: 'image/png' });
 
+                // 1. En móviles (iOS/Android): Compartir archivo PNG nativamente directo a WhatsApp
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         files: [file],
                         title: `Voucher #${ultimoTicketEmitido.id} - Bodega & Ropa`,
-                        text: `Comprobante de venta #${ultimoTicketEmitido.id} (S/ ${ultimoTicketEmitido.total.toFixed(2)})`
+                        text: `Comprobante de compra #${ultimoTicketEmitido.id} (S/ ${ultimoTicketEmitido.total.toFixed(2)})`
                     });
                     mostrarToast("Voucher compartido", "fa-circle-check", "text-emerald-600");
                 } else {
+                    // 2. En computadora: Intentar copiar imagen al portapapeles (Ctrl+V) y descargar respaldo
+                    let copiado = false;
+                    try {
+                        if (navigator.clipboard && window.ClipboardItem) {
+                            await navigator.clipboard.write([
+                                new ClipboardItem({ 'image/png': blob })
+                            ]);
+                            copiado = true;
+                        }
+                    } catch (clipErr) {
+                        copiado = false;
+                    }
+
                     const link = document.createElement('a');
                     link.download = fileName;
                     link.href = URL.createObjectURL(blob);
                     link.click();
 
-                    mostrarToast("Imagen descargada. Abriendo WhatsApp...", "fa-image", "text-emerald-600");
+                    if (copiado) {
+                        mostrarToast("¡Imagen copiada! Pégala (Ctrl+V) en WhatsApp", "fa-copy", "text-emerald-600");
+                    } else {
+                        mostrarToast("Imagen descargada. Abriendo WhatsApp...", "fa-image", "text-emerald-600");
+                    }
 
                     setTimeout(() => {
                         compartirTicketWhatsAppTexto();
@@ -1948,26 +2100,26 @@
         }
 
         function renderizarCajaYHistorial() {
-            const hoy = new Date().toLocaleDateString('es-PE');
-            const ventasHoy = historialVentas.filter(v => v.fecha === hoy);
+            const ventasHoy = historialVentas.filter(v => esFechaDeHoy(v.fecha));
+            const ventasValidasHoy = ventasHoy.filter(v => v.estado !== 'ANULADA');
 
-            const totalRecaudado = ventasHoy.reduce((acc, v) => acc + v.total, 0);
-            const totalGanancia = ventasHoy.reduce((acc, v) => acc + (v.ganancia || 0), 0);
-            const totalArticulos = ventasHoy.reduce((acc, v) => acc + v.items.reduce((a, i) => a + i.cantidad, 0), 0);
+            const totalRecaudado = ventasValidasHoy.reduce((acc, v) => acc + v.total, 0);
+            const totalGanancia = ventasValidasHoy.reduce((acc, v) => acc + (v.ganancia || 0), 0);
+            const totalArticulos = ventasValidasHoy.reduce((acc, v) => acc + v.items.reduce((a, i) => a + i.cantidad, 0), 0);
 
-            const pagoEfectivo = ventasHoy.filter(v => v.metodoPago === 'Efectivo').reduce((acc, v) => acc + v.total, 0);
-            const pagoYape = ventasHoy.filter(v => v.metodoPago === 'Yape').reduce((acc, v) => acc + v.total, 0);
-            const pagoTarjeta = ventasHoy.filter(v => v.metodoPago === 'Tarjeta').reduce((acc, v) => acc + v.total, 0);
+            const pagoEfectivo = ventasValidasHoy.filter(v => v.metodoPago === 'Efectivo').reduce((acc, v) => acc + v.total, 0);
+            const pagoYape = ventasValidasHoy.filter(v => v.metodoPago === 'Yape').reduce((acc, v) => acc + v.total, 0);
+            const pagoTarjeta = ventasValidasHoy.filter(v => v.metodoPago === 'Tarjeta').reduce((acc, v) => acc + v.total, 0);
 
             document.getElementById('caja-total-recaudado').innerText = `S/ ${totalRecaudado.toFixed(2)}`;
-            document.getElementById('caja-total-tickets').innerText = ventasHoy.length;
+            document.getElementById('caja-total-tickets').innerText = ventasValidasHoy.length;
             document.getElementById('caja-total-ganancia').innerText = `S/ ${totalGanancia.toFixed(2)}`;
             document.getElementById('caja-total-articulos').innerText = `${totalArticulos} un.`;
 
             document.getElementById('caja-pago-efectivo').innerText = `S/ ${pagoEfectivo.toFixed(2)}`;
             document.getElementById('caja-pago-yape').innerText = `S/ ${pagoYape.toFixed(2)}`;
             document.getElementById('caja-pago-tarjeta').innerText = `S/ ${pagoTarjeta.toFixed(2)}`;
-            document.getElementById('caja-contador-ventas-sub').innerText = `${ventasHoy.length} operaciones hoy`;
+            document.getElementById('caja-contador-ventas-sub').innerText = `${ventasValidasHoy.length} activas (${ventasHoy.length} total)`;
 
             const lista = document.getElementById('lista-historial-ventas');
             if (!lista) return;
@@ -1981,25 +2133,102 @@
                 return;
             }
 
-            lista.innerHTML = ventasHoy.map(v => `
-                <div class="glass-card p-3 rounded-2xl flex items-center justify-between gap-3 border border-white">
+            lista.innerHTML = ventasHoy.map(v => {
+                const esAnulada = v.estado === 'ANULADA';
+                return `
+                <div class="glass-card p-3 rounded-2xl flex items-center justify-between gap-3 border ${esAnulada ? 'border-rose-200/80 bg-rose-50/40 opacity-70' : 'border-white'}">
                     <div class="flex items-center gap-2.5 min-w-0">
-                        <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-black">
-                            <i class="fa-solid fa-receipt"></i>
+                        <span class="w-8 h-8 rounded-xl ${esAnulada ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-800'} flex items-center justify-center text-xs font-black">
+                            <i class="fa-solid ${esAnulada ? 'fa-ban' : 'fa-receipt'}"></i>
                         </span>
                         <div class="min-w-0">
-                            <h5 class="text-xs font-black text-slate-900 truncate">Venta #${v.id} (${v.hora})</h5>
+                            <div class="flex items-center gap-1.5">
+                                <h5 class="text-xs font-black ${esAnulada ? 'line-through text-slate-500' : 'text-slate-900'} truncate">Venta #${v.id} (${v.hora})</h5>
+                                ${esAnulada ? '<span class="text-[8px] font-black uppercase text-rose-700 bg-rose-100 px-1.5 py-0.2 rounded">Anulada</span>' : ''}
+                            </div>
                             <p class="text-[10px] text-slate-500 truncate font-medium">
                                 ${v.items.map(it => `${it.nombre} x${it.cantidad}`).join(', ')}
                             </p>
                         </div>
                     </div>
-                    <div class="text-right shrink-0">
-                        <span class="text-sm font-black text-emerald-800 block">S/ ${v.total.toFixed(2)}</span>
-                        <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">${v.metodoPago}</span>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <div class="text-right">
+                            <span class="text-sm font-black ${esAnulada ? 'line-through text-slate-400' : 'text-emerald-800'} block">S/ ${v.total.toFixed(2)}</span>
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">${v.metodoPago}</span>
+                        </div>
+                        ${!esAnulada ? `
+                        <button onclick="abrirModalAnularVenta('${v.id}')" title="Anular venta y reponer stock" class="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200/80 text-rose-600 flex items-center justify-center text-xs cursor-pointer active:scale-90 transition-transform">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>` : ''}
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
+        }
+
+        // ================= GESTIÓN DE ANULACIÓN DE VENTAS =================
+        function abrirModalAnularVenta(ticketId) {
+            const v = historialVentas.find(x => x.id === ticketId);
+            if (!v) return;
+            ventaAAnularPendiente = v;
+
+            document.getElementById('anular-venta-subtitulo').innerText = `Operación #${v.id} • Monto: S/ ${v.total.toFixed(2)}`;
+            const contenedorItems = document.getElementById('anular-venta-detalle-items');
+            contenedorItems.innerHTML = v.items.map(it => `<div>• ${it.nombre} <b class="text-emerald-700">(+${it.cantidad} un.)</b></div>`).join('');
+
+            document.getElementById('modal-anular-venta').classList.remove('hidden');
+        }
+
+        function cerrarModalAnularVenta() {
+            ventaAAnularPendiente = null;
+            document.getElementById('modal-anular-venta').classList.add('hidden');
+        }
+
+        async function ejecutarAnulacionVentaConfirmada() {
+            if (!ventaAAnularPendiente) return;
+            const venta = ventaAAnularPendiente;
+            cerrarModalAnularVenta();
+
+            // 1. Marcar como ANULADA localmente
+            venta.estado = 'ANULADA';
+            localStorage.setItem('bodega_historial_ventas', JSON.stringify(historialVentas));
+
+            // 2. Reponer stock de los productos vendidos
+            venta.items.forEach(it => {
+                // Buscar producto por código o por nombre coincidente
+                let producto = null;
+                if (it.codigo && inventario[it.codigo]) {
+                    producto = inventario[it.codigo];
+                } else {
+                    producto = Object.values(inventario).find(p => normalizarTexto(p.nombre) === normalizarTexto(it.nombre));
+                }
+
+                if (producto) {
+                    producto.stock += it.cantidad;
+                    enviarSheets({
+                        accion: "actualizarStock",
+                        codigo: producto.codigo,
+                        delta: it.cantidad
+                    });
+                }
+            });
+
+            localStorage.setItem('bodega_sheets_cache', JSON.stringify(inventario));
+
+            // 3. Notificar anulación a Sheets
+            enviarSheets({
+                accion: "anularVenta",
+                ticketId: venta.id
+            });
+
+            actualizarBadge();
+            renderizarInventario();
+            renderizarCajaYHistorial();
+            if (productoSeleccionado && inventario[productoSeleccionado]) {
+                mostrarDetallesProducto(productoSeleccionado);
+            }
+
+            mostrarToast(`Venta #${venta.id} anulada y stock repuesto`, "fa-rotate-left", "text-amber-600");
         }
 
         function abrirModalConfirmarReinicioCaja() {
@@ -2386,7 +2615,10 @@
                     if (navigator.vibrate) navigator.vibrate(30);
 
                     try {
-                        await cargarInventarioDesdeSheets(true);
+                        await Promise.all([
+                            cargarInventarioDesdeSheets(true),
+                            cargarVentasDesdeSheets()
+                        ]);
                     } catch (e) {
                         console.error(e);
                     } finally {
@@ -2415,6 +2647,7 @@
         procesarColaSync();
         renderizarInventario();
         cargarInventarioDesdeSheets();
+        cargarVentasDesdeSheets();
         actualizarVistasCarrito();
         renderizarCajaYHistorial();
     </script>
